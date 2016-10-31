@@ -17,6 +17,7 @@ public class MusicApp extends Application {
 	private static String rootPath = "/mymusic";
 	public static String lrcPath = "/lrc";
 	public static String musicPath = "/music";
+	public static String picPath = "/pic";
 	
 	@Override
 	public void onCreate() {
@@ -34,6 +35,7 @@ public class MusicApp extends Application {
 		rootPath = ROOT + rootPath;
 		lrcPath = rootPath + lrcPath;
 		musicPath = rootPath + musicPath;
+		picPath = rootPath + picPath;
 		File lrcFile = new File(lrcPath);
 		if(!lrcFile.exists()) {
 			lrcFile.mkdirs();
@@ -41,6 +43,10 @@ public class MusicApp extends Application {
 		File musicFile = new File(musicPath);
 		if(!musicFile.exists()) {
 			musicFile.mkdirs();
+		}
+		File picFile = new File(picPath);
+		if(!picFile.exists()) {
+			picFile.mkdirs();
 		}
 	}
 }

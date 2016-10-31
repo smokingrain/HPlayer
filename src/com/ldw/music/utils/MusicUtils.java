@@ -283,7 +283,6 @@ public class MusicUtils implements IConstants {
 			music.folder = folderPath;
 			music.musicNameKey = StringHelper.getPingYin(music.musicName);
 			music.artistKey = StringHelper.getPingYin(music.artist);
-			Log.i("com.xk.hplayer", music.musicName);
 			if(MusicApp.musicPath.contains(folderPath)) {
 				musicList.add(music);
 			}

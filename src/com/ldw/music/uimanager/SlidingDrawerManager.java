@@ -48,14 +48,19 @@ import com.ldw.music.adapter.LyricAdapter;
 import com.ldw.music.adapter.MyAdapter;
 import com.ldw.music.db.FavoriteInfoDao;
 import com.ldw.music.db.MusicInfoDao;
+import com.ldw.music.lrc.LrcInfo;
 import com.ldw.music.lrc.LyricDownloadManager;
 import com.ldw.music.lrc.LyricLoadHelper;
 import com.ldw.music.lrc.LyricLoadHelper.LyricListener;
 import com.ldw.music.lrc.XRCLine;
 import com.ldw.music.model.MusicInfo;
+import com.ldw.music.service.DownloadService;
 import com.ldw.music.service.ServiceManager;
 import com.ldw.music.storage.SPStorage;
+import com.ldw.music.utils.HTTPUtil;
 import com.ldw.music.utils.MusicTimer;
+import com.ldw.music.utils.SongSeacher;
+import com.ldw.music.utils.SongSeacher.SearchInfo;
 import com.ldw.music.view.MySlidingDrawer;
 
 /**
@@ -351,7 +356,8 @@ public class SlidingDrawerManager implements OnClickListener,
 		final Button cancleBtn = (Button) view.findViewById(R.id.cancel_btn);
 		final EditText artistEt = (EditText) view.findViewById(R.id.artist_tv);
 		final EditText musicEt = (EditText) view.findViewById(R.id.music_tv);
-
+		final String lrcName = mCurrentMusicInfo.data.substring(mCurrentMusicInfo.data.lastIndexOf(File.separator)+1, mCurrentMusicInfo.data.lastIndexOf("."));
+		
 		artistEt.setText(mCurrentMusicInfo.artist);
 		musicEt.setText(mCurrentMusicInfo.musicName);
 		OnClickListener btnListener = new OnClickListener() {
@@ -366,8 +372,7 @@ public class SlidingDrawerManager implements OnClickListener,
 								Toast.LENGTH_SHORT).show();
 					} else {
 						// 开始搜索
-//						loadLyric(music, artist);
-						loadLyricByHand(music, artist);
+						loadLyricByHand(music, artist, lrcName);
 						dialog.dismiss();
 					}
 				} else if (v == cancleBtn) {
@@ -401,7 +406,6 @@ public class SlidingDrawerManager implements OnClickListener,
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
-		System.out.println("---------------------------------------");
 		if (seekBar == mPlaybackSeekBar) {
 			if (!mPlayAuto) {
 				mProgress = progress;
@@ -410,7 +414,6 @@ public class SlidingDrawerManager implements OnClickListener,
 				// mServiceManager.duration());
 			}
 		} else if (seekBar == mVolumeSeekBar) {
-			System.out.println("++++++++++++++++++++++++++++++++++++++");
 			mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress,
 					0);
 		}
@@ -437,13 +440,6 @@ public class SlidingDrawerManager implements OnClickListener,
 		}
 	}
 
-	private void loadLyric(String music, String artist) {
-		MusicInfo info = new MusicInfo();
-		info.musicName = music;
-		info.artist = artist;
-		loadLyric(info);
-	}
-
 	/**
 	 * 读取本地歌词文件
 	 */
@@ -452,8 +448,10 @@ public class SlidingDrawerManager implements OnClickListener,
 			return;
 		}
 		Log.i("com.xk.hplayer", "try load " + playingSong.musicName +".lrc");
+		String lrcName = playingSong.data.substring(playingSong.data.lastIndexOf(File.separator)+1, playingSong.data.lastIndexOf("."));
+		
 		// 取得歌曲同目录下的歌词文件绝对路径
-		String lyricFilePath = MusicApp.lrcPath + "/" + playingSong.musicName
+		String lyricFilePath = MusicApp.lrcPath + "/" + lrcName
 				+ ".lrc";
 		File lyricfile = new File(lyricFilePath);
 
@@ -466,8 +464,8 @@ public class SlidingDrawerManager implements OnClickListener,
 				mIsLyricDownloading = true;
 				// 尝试网络获取歌词
 				// Log.i(TAG, "loadLyric()--->本地无歌词，尝试从网络获取");
-				new LyricDownloadAsyncTask().execute(playingSong.musicName,
-						playingSong.artist);
+				new LyricDownloadAsyncTask().execute(lrcName,
+						playingSong.artist, lrcName);
 			} else {
 				// 设置歌词为空
 				mLyricLoadHelper.loadLyric(null, 0);
@@ -475,9 +473,9 @@ public class SlidingDrawerManager implements OnClickListener,
 		}
 	}
 
-	private void loadLyricByHand(String musicName, String artist) {
+	private void loadLyricByHand(String musicName, String artist, String lrcName) {
 		// 取得歌曲同目录下的歌词文件绝对路径
-		String lyricFilePath = MusicApp.lrcPath + "/" + musicName + ".lrc";
+		String lyricFilePath = MusicApp.lrcPath + "/" + lrcName + ".lrc";
 		File lyricfile = new File(lyricFilePath);
 
 		if (lyricfile.exists()) {
@@ -488,7 +486,7 @@ public class SlidingDrawerManager implements OnClickListener,
 			mIsLyricDownloading = true;
 			// 尝试网络获取歌词
 			// Log.i(TAG, "loadLyric()--->本地无歌词，尝试从网络获取");
-			new LyricDownloadAsyncTask().execute(musicName, artist);
+			new LyricDownloadAsyncTask().execute(musicName, artist, lrcName);
 
 		}
 	}
@@ -515,18 +513,30 @@ public class SlidingDrawerManager implements OnClickListener,
 
 		@Override
 		protected String doInBackground(String... params) {
-			// 从网络获取歌词，然后保存到本地
-			String lyricFilePath = mLyricDownloadManager.searchLyricFromWeb(
-					params[0], params[1], mCurrentMusicInfo.musicName);
+			String toSearch = params[0] + " - " + params[1];
+			List<SearchInfo> infos = SongSeacher.getLrcFromKuwo(toSearch);
+			String path = null;
+			for(SearchInfo info: infos) {
+				if(info.name.contains(params[0]) && params[1].equals(info.singer)) {
+					String html = HTTPUtil.getInstance("player").getHtml(info.lrcURL);
+					LrcInfo lrcs = SongSeacher.perseFromHTML(html);
+					if(lrcs.getInfos() == null || lrcs.getInfos().isEmpty()) {
+						continue;
+					}
+					path = MusicApp.lrcPath + "/" + params[2] + ".lrc";
+					DownloadService.saveLrc(new File(path), lrcs);
+					break;
+				}
+			}
 			// 返回本地歌词路径
 			mIsLyricDownloading = false;
-			return lyricFilePath;
+			return path;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
 			// Log.i(TAG, "网络获取歌词完毕，歌词保存路径:" + result);
-			// 读取保存到本地的歌曲
+			// 读取保存到本地的歌曲 可能下载失败，无所谓
 			mLyricLoadHelper.loadLyric(result, Integer.MAX_VALUE);
 		};
 	};

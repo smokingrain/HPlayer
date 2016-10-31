@@ -74,6 +74,10 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(ALARM_CLOCK_BROADCAST);
 		registerReceiver(mAlarmReceiver, filter);
+		
+		IntentFilter downloadFilter = new IntentFilter();
+		downloadFilter.addAction(BROADCAST_DOWNLOADED);
+		registerReceiver(mDownloadReceiver, downloadFilter);
 
 		setContentView(R.layout.frame_main);
 		mSplashScreen = new SplashScreen(this);
@@ -285,11 +289,22 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 
 	};
 
+	private BroadcastReceiver mDownloadReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String name = intent.getStringExtra("name");
+			Toast.makeText(getApplicationContext(), name + "下载完毕，请重新扫描", Toast.LENGTH_SHORT).show();
+			
+		}
+	};
+	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		unregisterReceiver(sdCardReceiver);
 		unregisterReceiver(mAlarmReceiver);
+		unregisterReceiver(mDownloadReceiver);
 		MusicApp.mServiceManager.exit();
 		MusicApp.mServiceManager = null;
 		MusicUtils.clearCache();

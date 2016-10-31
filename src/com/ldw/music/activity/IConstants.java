@@ -12,6 +12,7 @@ public interface IConstants {
 	public static final String BROADCAST_QUERY_COMPLETE_NAME = "com.ldw.music.querycomplete.broadcast";
 	public static final String BROADCAST_CHANGEBG = "com.ldw.music.changebg";
 	public static final String BROADCAST_SHAKE = "com.ldw.music.shake";
+	public static final String BROADCAST_DOWNLOADED = "com.ldw.music.downloaded";
 	
 	//是否开启了振动模式
 	public static final String SHAKE_ON_OFF = "SHAKE_ON_OFF";

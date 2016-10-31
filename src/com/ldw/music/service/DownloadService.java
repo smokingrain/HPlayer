@@ -1,13 +1,23 @@
 package com.ldw.music.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.ldw.music.MusicApp;
+import com.ldw.music.activity.IConstants;
+import com.ldw.music.db.DatabaseHelper;
+import com.ldw.music.lrc.LrcInfo;
+import com.ldw.music.utils.FileUtils;
 import com.ldw.music.utils.HTTPUtil;
+import com.ldw.music.utils.MusicUtils;
 import com.ldw.music.utils.SongLocation;
+import com.ldw.music.utils.SongSeacher;
 import com.ldw.music.utils.SongSeacher.SearchInfo;
 
 import android.app.IntentService;
@@ -19,11 +29,12 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
-public class DownloadService extends Service {
+public class DownloadService extends Service implements IConstants{
 
 	public static final String DOWNLOAD_MUSIC = "DOWNLOAD_MUSIC";
-	private LinkedList<SearchInfo> queue = new LinkedList<SearchInfo>();
+	private LinkedBlockingQueue<SearchInfo> queue = new LinkedBlockingQueue<SearchInfo>();
 	
 	private boolean running = true;
 	
@@ -31,7 +42,12 @@ public class DownloadService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		SearchInfo info = (SearchInfo) intent.getSerializableExtra("info");
 		if(null != info) {
-			queue.add(info);
+			try {
+				queue.put(info);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -61,33 +77,23 @@ public class DownloadService extends Service {
 			public void run() {
 				while(running) {
 					try {
-						SearchInfo info = queue.poll();
-						int persent = 0;
+						SearchInfo info = queue.take();
 						if(null != info) {
 							String url=info.url;
+							String lrcUrl = info.lrcURL;
 							String realUrl=HTTPUtil.getInstance("player").getHtml(url);
 							SongLocation loc=HTTPUtil.getInstance("player").getInputStream(realUrl);
 							String parent=MusicApp.musicPath;
+							String lrcParent=MusicApp.lrcPath;
 							File file=new File(parent,info.singer+" - "+info.name+"."+info.type);
+							File lrcFile=new File(lrcParent,info.singer+" - "+info.name+"." + ".lrc");
 							if(!file.exists()){
-								File temp = new File(parent,"temp_"+System.currentTimeMillis()+".ape");
-								FileOutputStream out=null;
+								File temp = new File(parent,"temp_"+System.currentTimeMillis() + info.type);
+								String html = HTTPUtil.getInstance("player").getHtml(lrcUrl);
+								LrcInfo lrcs = SongSeacher.perseFromHTML(html);
 								try {
-									temp.createNewFile();
-									out=new FileOutputStream(temp);
-									long all=0;
-									byte[]buf=new byte[20480];
-									int len=0;
-									while((len=loc.input.read(buf, 0, buf.length))>=0){
-										all+=len;
-										double per=(double)all/loc.length*100;
-										if(per-persent>1||per>=100){
-											persent=(int) (per);
-										}
-										out.write(buf, 0, len);
-										out.flush();
-									}
-									temp.renameTo(file);
+									saveToFile(temp, file, loc.input);
+									saveLrc(lrcFile, lrcs);
 									if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					                    Intent mediaScanIntent = new Intent(
 					                            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -100,28 +106,26 @@ public class DownloadService extends Service {
 					                            Uri.parse("file://"
 					                                    + Environment.getExternalStorageDirectory())));
 					                }
+									Intent downloadIntent = new Intent(BROADCAST_DOWNLOADED);
+									downloadIntent.putExtra("name", info.name);
+									sendBroadcast(downloadIntent);
 								} catch (Exception e) {
 									System.out.println("download failed!"+e.getMessage());
 								}finally{
-									if(null!=out){
-										try {
-											out.close();
-										} catch (IOException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-									}
+									temp.delete();
 								}
 							}
 							try {
 								loc.input.close();
-							} catch (IOException e) {
+							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 							Log.i("com.xk.hplayer", info.name + " 下载完成");
 						}
+						Log.i("com.xk.hplayer", "looping!!!!");
 					} catch (Exception e) {
+						e.printStackTrace();
 						Log.e("com.xk.hplayer", "下载队列出错！！" + e.getMessage());
 					}
 				}
@@ -129,6 +133,64 @@ public class DownloadService extends Service {
 			}
 		});
     	t.start();
+    }
+    
+    /**
+     * 保存歌词
+     * @param lrc
+     * @param lrcs
+     */
+    public static void saveLrc(File lrc, LrcInfo lrcs) {
+    	Map<Long ,String>ls=lrcs.getInfos();
+		StringBuffer sb=new StringBuffer();
+		for(Long time:ls.keySet()){
+			String text=ls.get(time);
+			long mil=(time%1000);
+			long sec=time/1000;
+			long mun=sec/60;
+			long second=sec%60;
+			sb.append("[").append(format(mun))
+			.append(":").append(format(second)).append(".")
+			.append(format(mil)).append("]").append(text).append("\r\n");
+		}
+		FileUtils.writeString(sb.toString(), lrc);
+    }
+    
+    /**
+     * 格式化时间
+     * @param time
+     * @return
+     */
+    private static String format(long time){
+		if(time<10){
+			return "0"+time;
+		}
+		if(time>99){
+			return time/10+"";
+		}
+		return time+"";
+	}
+    
+    private void saveToFile(File temp,File file, InputStream loc) throws IOException{
+    	FileOutputStream out = null;
+    	try {
+			temp.createNewFile();
+			out = new FileOutputStream(temp);
+			byte[]buf = new byte[20480];
+			int len = 0;
+			while((len=loc.read(buf, 0, buf.length))>=0){
+				out.write(buf, 0, len);
+				out.flush();
+			}
+			temp.renameTo(file);
+		} catch (IOException e) {
+			throw e;
+		}finally {
+			if(null != out) {
+				out.close();
+			}
+		}
+		
     }
     
     public static void addDownloadTask(Context context, SearchInfo info) {

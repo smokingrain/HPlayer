@@ -40,6 +40,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.ldw.music.lrc.LrcInfo;
+import com.ldw.music.lrc.LrcParser;
+import com.ldw.music.lrc.XRCLine;
 
 /**
  * @项目名称：MusicParser
@@ -105,7 +107,7 @@ public class SongSeacher {
 					Elements as=nameP.getElementsByTag("a");
 					for(Element a:as){
 						info.name=a.attr("title");
-						info.url=a.attr("href");
+						info.lrcURL=a.attr("href");
 						break;
 					}
 					break;
@@ -141,8 +143,25 @@ public class SongSeacher {
 		return lrc;
 	}
 	
+	public static List<XRCLine> perseFromHTML(String html, Long allLength){
+		Document doc=Jsoup.parse(html);
+		Elements lrcs=doc.select("p[class=lrcItem]");
+		LrcInfo lrc=new LrcInfo();
+		Map<Long,String> infos=new HashMap<Long, String>();
+		for(Element ele:lrcs){
+			String time=ele.attr("data-time");
+			double dtime=Double.parseDouble(time);
+			long ltime=(long) (dtime*1000);
+			String text=ele.text();
+			infos.put(ltime, text);
+		}
+		lrc.setInfos(infos);
+		LrcParser parser = new LrcParser(null==allLength?Integer.MAX_VALUE:allLength);
+		return parser.parseXRC(lrc);
+	}
+	
 	public static List<SearchInfo> getSongFromKuwo(String name){
-		return getSongFromKuwo(name, "ape");
+		return getSongFromKuwo(name, "mp3");
 	}
 	
 	public static List<SearchInfo> getSongFromKuwo(String name, String type){
@@ -166,6 +185,7 @@ public class SongSeacher {
 					Elements as=nameP.getElementsByTag("a");
 					for(Element a:as){
 						info.name=a.attr("title");
+						info.lrcURL=a.attr("href");
 						break;
 					}
 					break;
@@ -213,11 +233,12 @@ public class SongSeacher {
 		 * 
 		 */
 		private static final long serialVersionUID = 314395112714052640L;
-		public String url="";
-		public String name="";
-		public String singer="";
-		public String album="";
+		public String url = "";
+		public String name = "";
+		public String singer = "";
+		public String album = "";
 		public String type = "ape";
+		public String lrcURL = "";
 	}
 	
 }

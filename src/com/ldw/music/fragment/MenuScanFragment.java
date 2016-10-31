@@ -37,7 +37,7 @@ public class MenuScanFragment extends Fragment implements IConstants, OnClickLis
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mHelper = new DatabaseHelper(getActivity());
+		mHelper = DatabaseHelper.getHelper(getActivity());
 	}
 	
 	@Override

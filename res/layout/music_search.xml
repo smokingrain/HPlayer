@@ -50,7 +50,4 @@
         android:paddingLeft="5.0dip"
         android:paddingRight="5.0dip" />
 
-    <include
-        layout="@layout/t9_keyboard" />
-
 </LinearLayout>

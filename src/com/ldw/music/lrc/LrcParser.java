@@ -43,10 +43,8 @@ public class LrcParser {
         return ins;   
     }   
   
-    public List<XRCLine> parser(String path) throws Exception {   
-        InputStream in = readLrcFile(path);   
-        lrcinfo = parser(in);
-        Map<Long, String> maps = lrcinfo.getInfos();
+    public List<XRCLine> parseXRC(LrcInfo lrcinfo){
+    	Map<Long, String> maps = lrcinfo.getInfos();
         Long[]templist = new Long[maps.keySet().size()];
 		Iterator<Long> itr = maps.keySet().iterator();
 		int index = 0;
@@ -88,7 +86,12 @@ public class LrcParser {
 			}
 		}
         return lines;   
-  
+    }
+    
+    public List<XRCLine> parser(String path) throws Exception {   
+        InputStream in = readLrcFile(path);   
+        lrcinfo = parser(in);
+        return parseXRC(lrcinfo);
     }   
        
     private Long[] sortList(Long[] timelist) {
