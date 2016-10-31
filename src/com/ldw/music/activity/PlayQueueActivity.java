@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.activity;
 
 import java.util.ArrayList;
@@ -35,7 +32,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 播放队列
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class PlayQueueActivity extends Activity implements OnItemClickListener, IConstants {

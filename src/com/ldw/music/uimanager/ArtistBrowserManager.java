@@ -29,7 +29,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 歌手列表
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class ArtistBrowserManager extends MainUIManager implements OnClickListener,

@@ -3,10 +3,7 @@
  */
 package com.ldw.music.lrc;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,7 +17,7 @@ import android.util.Log;
 
 /**
  * 歌词的显示控制
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class LyricLoadHelper {
@@ -52,7 +49,7 @@ public class LyricLoadHelper {
 	private static final String TAG = LyricLoadHelper.class.getSimpleName();
 
 	/** 句子集合 */
-	private ArrayList<XRCLine> mLyricSentences = new ArrayList<XRCLine>();
+	private List<XRCLine> mLyricSentences = new ArrayList<XRCLine>();
 
 	private LyricListener mLyricListener = null;
 
@@ -92,7 +89,7 @@ public class LyricLoadHelper {
 	 *            歌词文件路径
 	 * @return true表示存在歌词，false表示不存在歌词
 	 */
-	public boolean loadLyric(String lyricPath) {
+	public boolean loadLyric(String lyricPath, long allLength) {
 		Log.i(TAG, "LoadLyric begin,path is:" + lyricPath);
 		mHasLyric = false;
 		mLyricSentences.clear();
@@ -104,18 +101,8 @@ public class LyricLoadHelper {
 				mHasLyric = true;
 				try {
 					
-					LrcParser parser = new LrcParser(allLength)
-					FileInputStream fr = new FileInputStream(file);
-					InputStreamReader isr = new InputStreamReader(fr, mEncoding);
-					BufferedReader br = new BufferedReader(isr);
-
-					String line = null;
-
-					// 逐行分析歌词文本
-					while ((line = br.readLine()) != null) {
-						Log.i(TAG, "lyric line:" + line);
-						parseLine(line);
-					}
+					LrcParser parser = new LrcParser(allLength);
+					mLyricSentences = parser.parser(lyricPath);
 
 					// 按时间排序句子集合
 					Collections.sort(mLyricSentences,
@@ -134,7 +121,6 @@ public class LyricLoadHelper {
 									}
 								}
 							});
-					fr.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -224,69 +210,6 @@ public class LyricLoadHelper {
 		}
 	}
 
-	/** 解析每行歌词文本,一行文本歌词可能对应多个时间戳 */
-	private void parseLine(String line) {
-		if (line.equals("")) {
-			return;
-		}
-		String content = null;
-		int timeLength = 0;
-		int index = 0;
-		Matcher matcher = mTimePattern.matcher(line);
-		int lastIndex = -1;// 最后一个时间标签的下标
-		int lastLength = -1;// 最后一个时间标签的长度
-
-		// 一行文本歌词可能对应多个时间戳，如“[01:02.3][01:11:22.33]在这阳光明媚的春天里”
-		// 一行也可能包含多个句子，如“[01:02.3]在这阳光明媚的春天里[01:02:22.33]我的眼泪忍不住流淌”
-		List<String> times = new ArrayList<String>();
-
-		// 寻找出本行所有时间戳，存入times中
-		while (matcher.find()) {
-			// 匹配的是中括号里的字符串，如01:02.3，01:11:22.33
-
-			String s = matcher.group();
-			index = line.indexOf("[" + s + "]");
-			if (lastIndex != -1 && index - lastIndex > lastLength + 2) {
-				// 如果大于上次的大小，则中间夹了别的内容在里面
-				// 这个时候就要分段了
-				content = trimBracket(line.substring(
-						lastIndex + lastLength + 2, index));
-				for (String string : times) {
-					// 将每个时间戳对应的一份句子存入句子集合
-					long t = parseTime(string);
-					if (t != -1) {
-						Log.i(TAG, "line content match-->" + content);
-						mLyricSentences.add(new LyricSentence(t, content));
-					}
-				}
-				times.clear();
-			}
-			times.add(s);
-			lastIndex = index;
-			lastLength = s.length();
-
-			Log.i(TAG, "time match--->" + s);
-		}
-		// 如果列表为空，则表示本行没有分析出任何标签
-		if (times.isEmpty()) {
-			return;
-		}
-
-		timeLength = lastLength + 2 + lastIndex;
-		if (timeLength > line.length()) {
-			content = trimBracket(line.substring(line.length()));
-		} else {
-			content = trimBracket(line.substring(timeLength));
-		}
-		Log.i(TAG, "line content match-->" + content);
-		// 将每个时间戳对应的一份句子存入句子集合
-		for (String s : times) {
-			long t = parseTime(s);
-			if (t != -1) {
-				mLyricSentences.add(new LyricSentence(t, content));
-			}
-		}
-	}
 
 	/** 去除指定字符串中包含[XXX]形式的字符串 */
 	private String trimBracket(String content) {

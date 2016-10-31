@@ -21,7 +21,7 @@ import com.ldw.music.storage.SPStorage;
 
 /**
  * 
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuSettingFragment extends Fragment implements OnClickListener, IConstants {

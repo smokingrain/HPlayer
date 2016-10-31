@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 /**
  * 
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class RightFragment extends Fragment {

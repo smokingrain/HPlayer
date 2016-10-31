@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 /**
  * 我的音乐底部View控制
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MainBottomUIManager implements OnClickListener {

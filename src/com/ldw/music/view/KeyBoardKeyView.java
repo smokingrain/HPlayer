@@ -17,7 +17,7 @@ import android.widget.ImageView;
 
 /**
  * 自定义搜索页的键盘
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class KeyBoardKeyView extends ImageView {

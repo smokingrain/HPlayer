@@ -24,7 +24,7 @@ import com.ldw.music.MusicApp;
 
 /**
  * 歌词下载
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class LyricDownloadManager {

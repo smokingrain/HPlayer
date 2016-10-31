@@ -23,7 +23,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuScanFragment extends Fragment implements IConstants, OnClickListener {

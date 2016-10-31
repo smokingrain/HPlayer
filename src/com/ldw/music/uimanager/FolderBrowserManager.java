@@ -29,7 +29,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 文件夹列表
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class FolderBrowserManager extends MainUIManager implements IConstants,

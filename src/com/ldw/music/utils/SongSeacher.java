@@ -25,6 +25,7 @@
  */
 package com.ldw.music.utils;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -141,7 +142,7 @@ public class SongSeacher {
 	}
 	
 	public static List<SearchInfo> getSongFromKuwo(String name){
-		return getSongFromKuwo(name, "mp3");
+		return getSongFromKuwo(name, "ape");
 	}
 	
 	public static List<SearchInfo> getSongFromKuwo(String name, String type){
@@ -207,12 +208,16 @@ public class SongSeacher {
 	}
 	
 	
-	public static class SearchInfo{
+	public static class SearchInfo implements Serializable{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 314395112714052640L;
 		public String url="";
 		public String name="";
 		public String singer="";
 		public String album="";
-		public String type = "mp3";
+		public String type = "ape";
 	}
 	
 }

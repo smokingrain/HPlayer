@@ -22,7 +22,7 @@ import com.ldw.music.fragment.RightFragment;
 
 /**
  * 扫描歌曲
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuScanActivity extends FragmentActivity {

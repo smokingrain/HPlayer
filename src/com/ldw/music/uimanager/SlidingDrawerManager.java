@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
@@ -59,7 +60,7 @@ import com.ldw.music.view.MySlidingDrawer;
 
 /**
  * 底部弹出的歌词界面控制
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 @SuppressLint("HandlerLeak")
@@ -450,6 +451,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		if (playingSong == null) {
 			return;
 		}
+		Log.i("com.xk.hplayer", "try load " + playingSong.musicName +".lrc");
 		// 取得歌曲同目录下的歌词文件绝对路径
 		String lyricFilePath = MusicApp.lrcPath + "/" + playingSong.musicName
 				+ ".lrc";
@@ -458,7 +460,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		if (lyricfile.exists()) {
 			// 本地有歌词，直接读取
 			// Log.i(TAG, "loadLyric()--->本地有歌词，直接读取");
-			mLyricLoadHelper.loadLyric(lyricFilePath);
+			mLyricLoadHelper.loadLyric(lyricFilePath, playingSong.duration);
 		} else {
 			if (mSp.getAutoLyric()) {
 				mIsLyricDownloading = true;
@@ -468,7 +470,7 @@ public class SlidingDrawerManager implements OnClickListener,
 						playingSong.artist);
 			} else {
 				// 设置歌词为空
-				mLyricLoadHelper.loadLyric(null);
+				mLyricLoadHelper.loadLyric(null, 0);
 			}
 		}
 	}
@@ -481,7 +483,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		if (lyricfile.exists()) {
 			// 本地有歌词，直接读取
 			// Log.i(TAG, "loadLyric()--->本地有歌词，直接读取");
-			mLyricLoadHelper.loadLyric(lyricFilePath);
+			mLyricLoadHelper.loadLyric(lyricFilePath, Integer.MAX_VALUE);
 		} else {
 			mIsLyricDownloading = true;
 			// 尝试网络获取歌词
@@ -525,7 +527,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		protected void onPostExecute(String result) {
 			// Log.i(TAG, "网络获取歌词完毕，歌词保存路径:" + result);
 			// 读取保存到本地的歌曲
-			mLyricLoadHelper.loadLyric(result);
+			mLyricLoadHelper.loadLyric(result, Integer.MAX_VALUE);
 		};
 	};
 

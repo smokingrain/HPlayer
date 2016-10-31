@@ -27,7 +27,7 @@ import com.ldw.music.slidemenu.SlidingMenu.OnOpenedListener;
 /**
  * 侧滑Menu
  * 该类提供了软件的设置，歌曲的控制等几大功能
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuFragment extends Fragment implements OnClickListener,

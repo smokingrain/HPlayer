@@ -29,7 +29,7 @@ import com.ldw.music.view.AlwaysMarqueeTextView;
 
 /**
  * 处理歌曲列表页中的UI元素，包括底部view，SlidingDrawer等
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 @SuppressLint("HandlerLeak")

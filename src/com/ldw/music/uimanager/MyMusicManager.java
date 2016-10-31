@@ -40,7 +40,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 我的音乐
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MyMusicManager extends MainUIManager implements IConstants,

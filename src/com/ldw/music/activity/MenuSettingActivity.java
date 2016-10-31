@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.activity;
 
 import java.util.ArrayList;
@@ -22,7 +19,7 @@ import com.ldw.music.fragment.RightFragment;
 
 /**
  * 设置界面
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuSettingActivity extends FragmentActivity {
@@ -54,15 +51,6 @@ public class MenuSettingActivity extends FragmentActivity {
 				mFragmentList));
 		mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		mViewPager.setCurrentItem(1, true);
-		
-		/*Handler handler = new Handler(){
-			@Override
-			public void handleMessage(Message msg) {
-				super.handleMessage(msg);
-				mViewPager.setCurrentItem(1, true);
-			}
-		};
-		handler.sendEmptyMessageDelayed(1, 1000);*/
 	}
 
 	private class MyPagerAdapter extends FragmentPagerAdapter {

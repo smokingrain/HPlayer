@@ -11,7 +11,7 @@ import android.os.Message;
 
 /**
  * 一个定时器，控制歌曲播放进度
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MusicTimer {

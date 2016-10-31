@@ -23,6 +23,7 @@ import android.provider.MediaStore.Audio.Albums;
 import android.provider.MediaStore.Audio.Media;
 import android.provider.MediaStore.Files.FileColumns;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.ldw.music.MusicApp;
 import com.ldw.music.activity.IConstants;
@@ -39,7 +40,7 @@ import com.ldw.music.storage.SPStorage;
 
 /**
  * 查询各主页信息，获取封面图片等
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MusicUtils implements IConstants {
@@ -282,6 +283,7 @@ public class MusicUtils implements IConstants {
 			music.folder = folderPath;
 			music.musicNameKey = StringHelper.getPingYin(music.musicName);
 			music.artistKey = StringHelper.getPingYin(music.artist);
+			Log.i("com.xk.hplayer", music.musicName);
 			if(MusicApp.musicPath.contains(folderPath)) {
 				musicList.add(music);
 			}

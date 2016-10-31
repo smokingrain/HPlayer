@@ -43,7 +43,7 @@ import com.ldw.music.utils.MusicTimer;
  * 首页内容
  * 该类展示了软件的几大模块
  * 另外要注意嵌套的两层ViewPager
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MainFragment extends Fragment implements IConstants,

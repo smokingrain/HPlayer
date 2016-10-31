@@ -41,7 +41,7 @@ import com.ldw.music.utils.SplashScreen;
 /**
  * 主类，首次进入应用会到这里
  * 该类提供了首页MainFragment的显示和侧滑MenuFragment的显示
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 @SuppressLint("HandlerLeak")

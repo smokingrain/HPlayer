@@ -17,7 +17,7 @@ import android.util.Log;
 
 /**
  * 歌词解析
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class LyricXMLParser {

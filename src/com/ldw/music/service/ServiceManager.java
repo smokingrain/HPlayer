@@ -21,7 +21,7 @@ import com.ldw.music.model.MusicInfo;
 
 /**
  * 控制Service
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class ServiceManager implements IConstants {

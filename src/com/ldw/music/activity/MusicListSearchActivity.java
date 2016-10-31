@@ -1,13 +1,13 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jsoup.helper.StringUtil;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -19,7 +19,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.InputType;
@@ -28,6 +30,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ImageSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -44,17 +47,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ldw.music.R;
 import com.ldw.music.aidl.IMediaService;
 import com.ldw.music.model.MusicInfo;
+import com.ldw.music.service.DownloadService;
 import com.ldw.music.utils.MusicUtils;
+import com.ldw.music.utils.SongSeacher;
+import com.ldw.music.utils.SongSeacher.SearchInfo;
 import com.ldw.music.utils.StringHelper;
 import com.ldw.music.view.KeyBoardKeyView;
 
 /**
  * 歌曲搜索界面
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MusicListSearchActivity extends Activity implements
@@ -64,14 +71,14 @@ public class MusicListSearchActivity extends Activity implements
 	private EditText mSearchInputEt;
 	private LinearLayout mKeyboardLayout;
 	/** 弹出的搜索软键盘是否是自定义的T9键盘 */
-	private boolean mIsT9Keyboard = true;
+	private boolean mIsT9Keyboard = false;
 	private InputMethodManager mInputMethodManager;
 	/** T9键盘各数字键对应的正则表达式 */
 	private static String T9KEYS[] = { "", "", "[abc]", "[def]", "[ghi]",
 			"[jkl]", "[mno]", "[pqrs]", "[tuv]", "[wxyz]" };
 	/** 当前播放的Music对象 */
 	// private Music mCurPlayingMusic;
-	private List<MusicInfo> mShowData = new ArrayList<MusicInfo>();
+	private List<SearchInfo> mShowData = new ArrayList<SearchInfo>();
 	private ServiceConnection mServiceConnection;
 	private IMediaService mService;
 	private List<MusicInfo> mMusicList = new ArrayList<MusicInfo>();
@@ -83,8 +90,9 @@ public class MusicListSearchActivity extends Activity implements
 
 	private Animation mAnimIn, mAnimOut;
 	private MusicPlayBroadcast mPlayBroadcast;
-	private int mPlayState = MPS_PLAYING;
-
+	private SearchHandler handler ;
+	private boolean searching = false;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -114,9 +122,10 @@ public class MusicListSearchActivity extends Activity implements
 				mKeyboardLayout.setVisibility(View.VISIBLE);
 			}
 		});
-
+		handler = new SearchHandler(this);
 		initConnection();
 		initView();
+		initListView();
 	}
 
 	private void initConnection() {
@@ -127,19 +136,6 @@ public class MusicListSearchActivity extends Activity implements
 
 			@Override
 			public void onServiceConnected(ComponentName name, IBinder service) {
-				mService = IMediaService.Stub.asInterface(service);
-				if (mService != null) {
-					try {
-						mService.getMusicList(mMusicList);
-						mCurMusicId = mService.getCurMusicId();
-						mPlayingSongPosition = MusicUtils.seekPosInListById(
-								mMusicList, mCurMusicId);
-						mPlayState = mService.getPlayState();
-						initListView();
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 		};
 
@@ -148,8 +144,7 @@ public class MusicListSearchActivity extends Activity implements
 	}
 
 	protected void initListView() {
-		mAdapter = new SearchAdapter(mMusicList);
-		mAdapter.setPlayState(mPlayState, mPlayingSongPosition);
+		mAdapter = new SearchAdapter(new ArrayList<SearchInfo>());
 		mListView.setAdapter(mAdapter);
 	}
 
@@ -160,12 +155,9 @@ public class MusicListSearchActivity extends Activity implements
 		mKeyboardSwitcherIv = (ImageView) findViewById(R.id.keyboard_switcher);
 		mSearchInputEt = (EditText) findViewById(R.id.search_input);
 		mKeyboardSwitcherIv.setOnClickListener(this);
+		initInput();
 		mSearchInputEt.setOnClickListener(this);
 		mListView.setOnItemClickListener(this);
-
-		// 搜索输入框禁止输入法输入
-		mSearchInputEt.setInputType(InputType.TYPE_NULL);
-		mSearchInputEt.requestFocus();
 
 		KeyBoardKeyView key2 = (KeyBoardKeyView) findViewById(R.id.t9_key_2);
 		KeyBoardKeyView key3 = (KeyBoardKeyView) findViewById(R.id.t9_key_3);
@@ -208,47 +200,6 @@ public class MusicListSearchActivity extends Activity implements
 				return false;
 			}
 		});
-		// 搜索输入框文本变化监听
-		mSearchInputEt.addTextChangedListener(new TextWatcher() {
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before,
-					int count) {
-				// 输入框文字改变时过滤歌曲列表
-				if (TextUtils.isEmpty(s)) {
-					// 这地方在按home键回到桌面再回来的时候会报空指针错误
-					mAdapter.setData(mMusicList);
-				} else if (mIsT9Keyboard) {
-					// T9键盘开启，进行简拼全拼搜索
-					pinyinSearch(s.toString());
-				} else {
-					// 普通的模糊搜索
-					pinyinSearch(StringHelper.getPingYin(s.toString()));
-				}
-			}
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				try {
-					if (mCurMusicId != -1) {
-						mAdapter.setPlayState(mService.getPlayState(),
-								MusicUtils.seekPosInListById(
-										mAdapter.getData(), mCurMusicId));
-					} 
-					/*else {
-						mAdapter.setPlayState(mService.getPlayState(), 0);
-					}*/
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	private class MusicPlayBroadcast extends BroadcastReceiver {
@@ -258,18 +209,15 @@ public class MusicListSearchActivity extends Activity implements
 			if (intent.getAction().equals(BROADCAST_NAME)) {
 				int playState = intent.getIntExtra(PLAY_STATE_NAME, MPS_NOFILE);
 				int curPlayIndex = intent.getIntExtra(PLAY_MUSIC_INDEX, -1);
-
-				mAdapter.setPlayState(playState, curPlayIndex);
 			}
 		}
 	}
 
 	private class SearchAdapter extends BaseAdapter {
 
-		private int mPlayState, mCurPlayMusicIndex;
-		private List<MusicInfo> musicList = new ArrayList<MusicInfo>();
+		private List<SearchInfo> musicList = new ArrayList<SearchInfo>();
 
-		public SearchAdapter(List<MusicInfo> mMusicList) {
+		public SearchAdapter(List<SearchInfo> mMusicList) {
 			musicList.addAll(mMusicList);
 		}
 
@@ -288,13 +236,8 @@ public class MusicListSearchActivity extends Activity implements
 			return position;
 		}
 
-		public void setPlayState(int playState, int playIndex) {
-			mPlayState = playState;
-			mCurPlayMusicIndex = playIndex;
-			notifyDataSetChanged();
-		}
 
-		public void setData(List<MusicInfo> list) {
+		public void setData(List<SearchInfo> list) {
 			musicList.clear();
 			if (list != null) {
 				musicList.addAll(list);
@@ -302,14 +245,14 @@ public class MusicListSearchActivity extends Activity implements
 			}
 		}
 
-		public List<MusicInfo> getData() {
+		public List<SearchInfo> getData() {
 			return musicList;
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 
-			MusicInfo music = musicList.get(position);
+			SearchInfo music = musicList.get(position);
 
 			ViewHolder viewHolder;
 			if (convertView == null) {
@@ -326,23 +269,10 @@ public class MusicListSearchActivity extends Activity implements
 			} else {
 				viewHolder = (ViewHolder) convertView.getTag();
 			}
-
-			if (position != mCurPlayMusicIndex) {
-				viewHolder.playStateIv.setVisibility(View.GONE);
-			} else {
-				viewHolder.playStateIv.setVisibility(View.VISIBLE);
-				if (mPlayState == MPS_PAUSE) {
-					viewHolder.playStateIv
-							.setBackgroundResource(R.drawable.list_pause_state);
-				} else {
-					viewHolder.playStateIv
-							.setBackgroundResource(R.drawable.list_play_state);
-				}
-			}
-
-			viewHolder.titleTv.setText((position + 1) + "." + music.musicName);
-			viewHolder.artistTv.setText(music.artist);
-
+			viewHolder.playStateIv.setVisibility(View.GONE);
+			viewHolder.titleTv.setText((position + 1) + "." + music.name);
+			viewHolder.artistTv.setText(music.singer);
+			convertView.setTag(music);
 			return convertView;
 		}
 
@@ -353,49 +283,47 @@ public class MusicListSearchActivity extends Activity implements
 
 	}
 
+	private void initInput() {
+		mKeyboardLayout.setVisibility(View.GONE);
+		mKeyboardSwitcherIv
+				.setImageResource(R.drawable.icon_search);
+		mSearchInputEt.setHint("请输入简拼或全拼");
+		// 显示输入法
+		mInputMethodManager.showSoftInput(mSearchInputEt, 0);
+		// 搜索输入框允许输入法输入
+		mSearchInputEt.setInputType(InputType.TYPE_CLASS_TEXT);
+	}
+	
+	private void searchSong() {
+		final String toSearch = mSearchInputEt.getText().toString();
+		if(!StringUtil.isBlank(toSearch) && !searching) {
+			Toast.makeText(this, "start search!!!", Toast.LENGTH_SHORT).show();
+			Thread searchThread = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					Log.i("com.xk.hplayer", "try search!");
+					searching = true;
+					List<SearchInfo> result = SongSeacher.getSongFromKuwo(toSearch);
+					Log.i("com.xk.hplayer", "search result!!");
+					Message msg = new Message();
+					msg.obj = result;
+					handler.sendMessage(msg);
+					Log.i("com.xk.hplayer", "sending!!");
+					searching = false;
+				}
+			});
+			searchThread.start();
+		}
+	}
+	
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.keyboard_switcher:
-			mIsT9Keyboard = !mIsT9Keyboard;
-			if (mIsT9Keyboard) {// 若T9隐藏 打开T9
-				mKeyboardSwitcherIv
-						.setImageResource(R.drawable.keyboard_switch);
-				mSearchInputEt.setHint("请输入简拼或全拼");
-				// 搜索输入框禁止输入法输入
-				mSearchInputEt.setInputType(InputType.TYPE_NULL);
-
-				// 隐藏输入法
-				mInputMethodManager.hideSoftInputFromWindow(
-						mSearchInputEt.getWindowToken(), 0);
-				// 弹出T9键盘
-				mKeyboardLayout.setVisibility(View.VISIBLE);
-			} else {// 若T9显示 隐藏T9
-				mKeyboardLayout.setVisibility(View.GONE);
-				mKeyboardSwitcherIv
-						.setImageResource(R.drawable.keyboard_switch_9);
-				mSearchInputEt.setHint("请输入简拼或全拼");
-				// 显示输入法
-				mInputMethodManager.showSoftInput(mSearchInputEt, 0);
-				// 搜索输入框允许输入法输入
-				mSearchInputEt.setInputType(InputType.TYPE_CLASS_TEXT);
-			}
+			searchSong();
 			break;
 		case R.id.search_input:
-			// 隐藏输入法
-			// mInputMethodManager.hideSoftInputFromWindow(
-			// mSearchInputEt.getWindowToken(), 0);
-
-			if (!mIsT9Keyboard) {
-				// 显示输入法
-				mInputMethodManager.showSoftInput(mSearchInputEt, 0);
-				return;
-			}
-
-			if (!mKeyboardLayout.isShown() && mIsT9Keyboard) {
-				mSearchInputEt.requestFocus();
-				mKeyboardLayout.startAnimation(mAnimIn);
-			}
 			break;
 		case R.id.t9_key_2:
 			appendImageSpan(R.drawable.keyboard_edit_2, 2);
@@ -462,41 +390,6 @@ public class MusicListSearchActivity extends Activity implements
 		}
 	}
 
-	/**
-	 * T9键盘简拼、全拼搜索
-	 * 
-	 * @param str
-	 *            输入的字符串，均为2~9的数字
-	 */
-	private void pinyinSearch(String input) {
-		mShowData.clear();
-		StringBuffer sb = new StringBuffer();
-
-		// XXX 对特殊非字母、非数字、非汉字的字符支持不理想，有待改进
-
-		// 获取每一个数字对应的字母列表并以'-'隔开
-		for (int i = 0; i < input.length(); i++) {
-			if (mIsT9Keyboard && input.charAt(i) <= '9'
-					&& input.charAt(i) >= '0') {
-				sb.append(T9KEYS[input.charAt(i) - '0']);
-			} else {
-				sb.append(input.charAt(i));
-			}
-			if (i != input.length() - 1) {
-				sb.append("-");
-			}
-		}
-
-		// 遍历原始数据集合，寻找匹配的条目
-		for (MusicInfo item : mMusicList) {
-			if (contains(sb.toString(), item.musicNameKey, input)) {
-				mShowData.add(item);
-			} else if (contains(sb.toString(), item.artistKey, input)) {
-				mShowData.add(item);
-			}
-		}
-		mAdapter.setData(mShowData);
-	}
 
 	/**
 	 * 检查所给的搜索索引值是否匹配给定正则表达式
@@ -532,15 +425,34 @@ public class MusicListSearchActivity extends Activity implements
 		Matcher matcher = pattern.matcher(key);
 		return matcher.find();
 	}
-
+	
+	/**
+	 * 下载歌曲。
+	 */
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		try {
-			mService.playById(mAdapter.getData().get(position).songId);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		SearchInfo info = (SearchInfo) view.getTag();
+		DownloadService.addDownloadTask(getApplicationContext(), info);
+		Toast.makeText(getApplicationContext(), "已加入下载列表", Toast.LENGTH_SHORT).show();
 		finish();
 	}
+	
+	private static class SearchHandler extends Handler {
+
+		private MusicListSearchActivity thiz ;
+		
+		public SearchHandler(MusicListSearchActivity thiz) {
+			 this.thiz = thiz;
+		}
+		
+		@Override
+		public void handleMessage(Message msg) {
+			Toast.makeText(thiz, "start reflush!!", Toast.LENGTH_SHORT).show();
+			List<SearchInfo> results = (List<SearchInfo>) msg.obj;
+			thiz.mAdapter.setData(results);
+		}
+		
+	}
+	
 }

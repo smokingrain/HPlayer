@@ -10,7 +10,7 @@ import android.hardware.SensorManager;
 
 /**
  * 监听手机甩动
- * @author Longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class ShakeDetector implements SensorEventListener {

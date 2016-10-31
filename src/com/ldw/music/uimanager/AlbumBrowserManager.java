@@ -29,7 +29,7 @@ import com.ldw.music.utils.MusicUtils;
 
 /**
  * 专辑列表
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class AlbumBrowserManager extends MainUIManager implements IConstants,

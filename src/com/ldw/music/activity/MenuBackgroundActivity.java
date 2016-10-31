@@ -24,7 +24,7 @@ import com.ldw.music.fragment.RightFragment;
 
 /**
  * 设置背景
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public class MenuBackgroundActivity extends FragmentActivity {
