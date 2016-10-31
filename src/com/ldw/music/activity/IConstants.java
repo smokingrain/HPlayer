@@ -1,11 +1,8 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.activity;
 
 /**
  * 常量
- * @author longdw(longdawei1988@gmail.com)
+ * @author xiaokui
  *
  */
 public interface IConstants {
