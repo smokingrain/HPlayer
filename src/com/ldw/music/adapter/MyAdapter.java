@@ -177,6 +177,7 @@ public class MyAdapter extends BaseAdapter implements IConstants {
 			@Override
 			public void onClick(View v) {
 				if(music.favorite == 1) {
+					mMusicList.get(position).favorite = 0;
 					if(mFrom == START_FROM_FAVORITE) {
 						mMusicList.remove(position);
 						notifyDataSetChanged();
@@ -185,7 +186,6 @@ public class MyAdapter extends BaseAdapter implements IConstants {
 					mFavoriteDao.deleteById(music._id);
 					mMusicDao.setFavoriteStateById(music._id, 0);
 					viewHolder.favoriteIv.setImageResource(R.drawable.icon_favourite_normal);
-					mMusicList.get(position).favorite = 0;
 					mSdm.refreshFavorite(0);
 				} else {
 //					music.favorite = 1;
