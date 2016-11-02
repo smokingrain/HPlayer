@@ -1,5 +1,6 @@
 package com.ldw.music.activity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.jsoup.helper.StringUtil;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +20,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -30,6 +34,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ImageSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +47,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -75,9 +81,10 @@ public class MusicListSearchActivity extends Activity implements
 	protected int mPlayingSongPosition;
 	private SearchAdapter mAdapter;
 
-	private MusicPlayBroadcast mPlayBroadcast;
 	private SearchHandler handler ;
 	private boolean searching = false;
+	
+	private int mScreenWidth;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -85,10 +92,11 @@ public class MusicListSearchActivity extends Activity implements
 
 		setContentView(R.layout.music_search);
 
-		mPlayBroadcast = new MusicPlayBroadcast();
-		IntentFilter filter = new IntentFilter(BROADCAST_NAME);
-		registerReceiver(mPlayBroadcast, filter);
 
+		DisplayMetrics metric = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metric);
+		mScreenWidth = metric.widthPixels;
+		
 		mInputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		handler = new SearchHandler(this);
@@ -111,17 +119,6 @@ public class MusicListSearchActivity extends Activity implements
 		initInput();
 		mListView.setOnItemClickListener(this);
 
-	}
-
-	private class MusicPlayBroadcast extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(BROADCAST_NAME)) {
-				int playState = intent.getIntExtra(PLAY_STATE_NAME, MPS_NOFILE);
-				int curPlayIndex = intent.getIntExtra(PLAY_MUSIC_INDEX, -1);
-			}
-		}
 	}
 
 	private class SearchAdapter extends BaseAdapter {
@@ -203,22 +200,21 @@ public class MusicListSearchActivity extends Activity implements
 		mSearchInputEt.setInputType(InputType.TYPE_CLASS_TEXT);
 	}
 	
+	/**
+	 * 执行搜索
+	 */
 	private void searchSong() {
 		final String toSearch = mSearchInputEt.getText().toString();
 		if(!StringUtil.isBlank(toSearch) && !searching) {
-			Toast.makeText(this, "start search!!!", Toast.LENGTH_SHORT).show();
 			Thread searchThread = new Thread(new Runnable() {
 				
 				@Override
 				public void run() {
-					Log.i("com.xk.hplayer", "try search!");
 					searching = true;
 					List<SearchInfo> result = SongSeacher.getSongFromKuwo(toSearch);
-					Log.i("com.xk.hplayer", "search result!!");
 					Message msg = new Message();
 					msg.obj = result;
 					handler.sendMessage(msg);
-					Log.i("com.xk.hplayer", "sending!!");
 					searching = false;
 				}
 			});
@@ -237,8 +233,52 @@ public class MusicListSearchActivity extends Activity implements
 	}
 
 
+	/**
+	 * 没连接wifi的时候提示
+	 * @param info
+	 */
+	private void showWifiDialog(final SearchInfo info) {
+		View view = View.inflate(this, R.layout.confirm_download, null);
+		view.setMinimumWidth(mScreenWidth - 40);
+		final Dialog dialog = new Dialog(this, R.style.lrc_dialog);
 
+		final Button okBtn = (Button) view.findViewById(R.id.download_btn);
+		final Button cancleBtn = (Button) view.findViewById(R.id.nodown_btn);
+		
+		OnClickListener btnListener = new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				if (v == okBtn) {
+					DownloadService.addDownloadTask(getApplicationContext(), info);
+					Toast.makeText(getApplicationContext(), "已加入下载列表", Toast.LENGTH_SHORT).show();
+				}
+				dialog.dismiss();
+			}
+		};
+		okBtn.setOnClickListener(btnListener);
+		cancleBtn.setOnClickListener(btnListener);
+		dialog.setContentView(view);
+		dialog.show();
+	}
+	
+	/**
+	 * 检查是否连接了wifi
+	 * @param context
+	 * @return
+	 */
+	public boolean isWifiConnected(Context context) {
+		ConnectivityManager connectivityManager = (ConnectivityManager) context
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo wifiNetworkInfo = connectivityManager
+				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		if (wifiNetworkInfo.isConnected()) {
+			return true;
+		}
+
+		return false;
+	}
+	
 	
 	/**
 	 * 下载歌曲。
@@ -247,11 +287,20 @@ public class MusicListSearchActivity extends Activity implements
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		SearchInfo info = mAdapter.getData().get(position);
-		DownloadService.addDownloadTask(getApplicationContext(), info);
-		Toast.makeText(getApplicationContext(), "已加入下载列表", Toast.LENGTH_SHORT).show();
-		finish();
+		if(isWifiConnected(this)) {
+			DownloadService.addDownloadTask(getApplicationContext(), info);
+			Toast.makeText(getApplicationContext(), "已加入下载列表", Toast.LENGTH_SHORT).show();
+		}else {
+			showWifiDialog(info);
+		}
+		
 	}
 	
+	/**
+	 * 搜索回调
+	 * @author o-kui.xiao
+	 *
+	 */
 	private static class SearchHandler extends Handler {
 
 		private MusicListSearchActivity thiz ;
@@ -262,7 +311,6 @@ public class MusicListSearchActivity extends Activity implements
 		
 		@Override
 		public void handleMessage(Message msg) {
-			Toast.makeText(thiz, "start reflush!!", Toast.LENGTH_SHORT).show();
 			List<SearchInfo> results = (List<SearchInfo>) msg.obj;
 			thiz.mAdapter.setData(results);
 		}

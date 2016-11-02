@@ -94,6 +94,7 @@ public class DownloadService extends Service implements IConstants{
 								try {
 									saveToFile(temp, file, loc.input);
 									saveLrc(lrcFile, lrcs);
+									//提醒系统更新媒体目录
 									if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					                    Intent mediaScanIntent = new Intent(
 					                            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -106,11 +107,16 @@ public class DownloadService extends Service implements IConstants{
 					                            Uri.parse("file://"
 					                                    + Environment.getExternalStorageDirectory())));
 					                }
+									//下载成功
 									Intent downloadIntent = new Intent(BROADCAST_DOWNLOADED);
 									downloadIntent.putExtra("name", info.name);
 									sendBroadcast(downloadIntent);
 								} catch (Exception e) {
+									//下载失败
 									System.out.println("download failed!"+e.getMessage());
+									Intent downloadIntent = new Intent(BROADCAST_DOWNLOAD_FAILED);
+									downloadIntent.putExtra("name", info.name);
+									sendBroadcast(downloadIntent);
 								}finally{
 									temp.delete();
 								}
@@ -171,6 +177,13 @@ public class DownloadService extends Service implements IConstants{
 		return time+"";
 	}
     
+    /**
+     * 先将歌曲用临时文件存起来，然后重命名。防止下载一半就失败了，留下垃圾文件
+     * @param temp
+     * @param file
+     * @param loc
+     * @throws IOException
+     */
     private void saveToFile(File temp,File file, InputStream loc) throws IOException{
     	FileOutputStream out = null;
     	try {
@@ -193,6 +206,12 @@ public class DownloadService extends Service implements IConstants{
 		
     }
     
+    
+    /**
+     * 添加到下载队列
+     * @param context
+     * @param info
+     */
     public static void addDownloadTask(Context context, SearchInfo info) {
     	Intent intent = new Intent(context,DownloadService.class);
     	intent.setAction(DOWNLOAD_MUSIC);

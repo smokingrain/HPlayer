@@ -4,5 +4,8 @@
     <string name="app_name">田园花音乐</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-
+    <string name="continue_download">老子就是要下</string>
+    <string name="no_im_not">不下了</string>
+    <string name="desc_wifi_env">当前未连接WiFi，继续下载可能消耗流量，真的要下载吗？</string>
+    
 </resources>

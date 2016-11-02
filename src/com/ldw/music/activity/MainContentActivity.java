@@ -77,6 +77,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		
 		IntentFilter downloadFilter = new IntentFilter();
 		downloadFilter.addAction(BROADCAST_DOWNLOADED);
+		downloadFilter.addAction(BROADCAST_DOWNLOAD_FAILED);
 		registerReceiver(mDownloadReceiver, downloadFilter);
 
 		setContentView(R.layout.frame_main);
@@ -294,7 +295,15 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String name = intent.getStringExtra("name");
-			Toast.makeText(getApplicationContext(), name + "下载完毕，请重新扫描", Toast.LENGTH_SHORT).show();
+			switch(intent.getAction()) {
+			case BROADCAST_DOWNLOAD_FAILED:
+				Toast.makeText(getApplicationContext(), name + "下载失败，请重试。", Toast.LENGTH_SHORT).show();
+				break;
+			case BROADCAST_DOWNLOADED:
+				Toast.makeText(getApplicationContext(), name + "下载完毕，请重新扫描", Toast.LENGTH_SHORT).show();
+				break;
+			}
+			
 			
 		}
 	};
