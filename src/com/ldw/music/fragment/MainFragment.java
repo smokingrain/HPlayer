@@ -238,6 +238,9 @@ public class MainFragment extends Fragment implements IConstants,
 		int favoriteCount = mFavoriteDao.getDataCount();
 		
 		mAdapter.setNum(musicCount, artistCount, albumCount, folderCount, favoriteCount);
+		
+		Intent refresh = new Intent(BROADCAST_QUERY_COMPLETE_NAME);
+		getActivity().sendBroadcast(refresh);
 	}
 	
 	private class MusicPlayBroadcast extends BroadcastReceiver {

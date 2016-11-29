@@ -159,5 +159,11 @@ public class FolderBrowserManager extends MainUIManager implements IConstants,
 	public View getView(int from, Object obj) {
 		return null;
 	}
+	
+	@Override
+	public void reflushView(int from) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

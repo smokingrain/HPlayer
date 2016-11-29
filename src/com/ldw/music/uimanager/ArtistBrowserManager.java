@@ -158,4 +158,10 @@ OnItemClickListener, IConstants {
 		return null;
 	}
 
+	@Override
+	public void reflushView(int from) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

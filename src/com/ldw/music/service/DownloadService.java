@@ -108,8 +108,10 @@ public class DownloadService extends Service implements IConstants{
 					                                    + Environment.getExternalStorageDirectory())));
 					                }
 									//下载成功
+									Thread.sleep(1 * 1000);
 									Intent downloadIntent = new Intent(BROADCAST_DOWNLOADED);
 									downloadIntent.putExtra("name", info.name);
+									downloadIntent.putExtra("path", file.getAbsolutePath());
 									sendBroadcast(downloadIntent);
 								} catch (Exception e) {
 									//下载失败

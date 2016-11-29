@@ -11,4 +11,5 @@ public abstract class MainUIManager {
 	public abstract View getView();
 	public abstract View getView(int from);
 	public abstract View getView(int from, Object obj);
+	public abstract void reflushView(int from);
 }

@@ -5,10 +5,12 @@ package com.ldw.music.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -196,12 +198,7 @@ public class MusicUtils implements IConstants {
 	 * @param from 不同的界面进来要做不同的查询
 	 * @return
 	 */
-	public static List<MusicInfo> queryMusic(Context context, int from) {
-		return queryMusic(context, null, null, from);
-	}
-
-	public static List<MusicInfo> queryMusic(Context context,
-			String selections, String selection, int from) {
+	public static List<MusicInfo> queryMusic(Context context) {
 		if(mMusicInfoDao == null) {
 			mMusicInfoDao = new MusicInfoDao(context);
 		}
@@ -217,51 +214,38 @@ public class MusicUtils implements IConstants {
 		if(sp.getFilterTime()) {
 			select.append(" and " + Media.DURATION + " > " + FILTER_DURATION);
 		}
-
-		if (!TextUtils.isEmpty(selections)) {
-			select.append(selections);
-		}
 		
-		switch(from) {
-		case START_FROM_LOCAL:
-			if (mMusicInfoDao.hasData()) {
-				return mMusicInfoDao.getMusicInfo();
-			} else {
-				List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
-						select.toString(), null,
-						MediaStore.Audio.Media.ARTIST_KEY));
-				mMusicInfoDao.saveMusicInfo(list);
-				return list;
-			}
-		case START_FROM_ARTIST:
-			if (mMusicInfoDao.hasData()) {
-				return mMusicInfoDao.getMusicInfoByType(selection,
-						START_FROM_ARTIST);
-			} else {
-//				return getMusicList(cr.query(uri, proj_music,
-//						select.toString(), null,
-//						MediaStore.Audio.Media.ARTIST_KEY));
-			}
-		case START_FROM_ALBUM:
-			if (mMusicInfoDao.hasData()) {
-				return mMusicInfoDao.getMusicInfoByType(selection,
-						START_FROM_ALBUM);
-			}
-		case START_FROM_FOLDER:
-			if(mMusicInfoDao.hasData()) {
-				return mMusicInfoDao.getMusicInfoByType(selection, START_FROM_FOLDER);
-			}
-			default:
-				return null;
+		if (mMusicInfoDao.hasData()) {
+			return mMusicInfoDao.getMusicInfo();
+		} else {
+//			List<MusicInfo> list = getMusicLst(sp);
+			Log.i("com.xk.hplayer", "no data found!");
+			List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
+					select.toString(), null,
+					MediaStore.Audio.Media.ARTIST_KEY));
+			mMusicInfoDao.saveMusicInfo(list);
+			return list;
 		}
 
 	}
 
-	public static ArrayList<MusicInfo> getMusicList(Cursor cursor) {
-		if (cursor == null) {
-			return null;
+	
+	public static void insertSingleSong(String path, Context context) {
+		Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+		ContentResolver cr = context.getContentResolver();
+		StringBuffer select = new StringBuffer(" " + Media.DATA + " = '" + path + "'");
+		List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
+				select.toString(), null,
+				MediaStore.Audio.Media.ARTIST_KEY));
+		mMusicInfoDao.saveMusicInfo(list);
+	}
+
+	private static List<MusicInfo> getMusicList(Cursor cursor) {
+		List<MusicInfo> musicList = new ArrayList<MusicInfo>();
+		if(null == cursor) {
+			return musicList;
 		}
-		ArrayList<MusicInfo> musicList = new ArrayList<MusicInfo>();
+		
 		while (cursor.moveToNext()) {
 			MusicInfo music = new MusicInfo();
 			music.songId = cursor.getInt(cursor
@@ -288,6 +272,7 @@ public class MusicUtils implements IConstants {
 			}
 		}
 		cursor.close();
+		Log.i("com.xk.hplayer", "get data!");
 		return musicList;
 	}
 

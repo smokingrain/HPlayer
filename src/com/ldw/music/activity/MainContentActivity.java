@@ -20,6 +20,7 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 
 import com.ldw.music.MusicApp;
 import com.ldw.music.R;
+import com.ldw.music.db.DatabaseHelper;
 import com.ldw.music.db.MusicInfoDao;
 import com.ldw.music.fragment.MainFragment;
 import com.ldw.music.fragment.MenuFragment;
@@ -68,7 +70,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		DisplayMetrics metric = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metric);
 		mScreenWidth = metric.widthPixels;
-
+		Log.i("com.xk.hplayer", "start app!");
 		initSDCard();
 		
 		IntentFilter filter = new IntentFilter();
@@ -111,7 +113,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 				mSplashScreen.removeSplashScreen();
 			}
 		};
-
+		Log.i("com.xk.hplayer", "view end!");
 		getData();
 	}
 
@@ -139,8 +141,8 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 					// 如果有数据就等三秒跳转
 					mHandler.sendMessageDelayed(mHandler.obtainMessage(), 3000);
 				} else {
-					MusicUtils.queryMusic(MainContentActivity.this,
-							START_FROM_LOCAL);
+					Log.i("com.xk.hplayer", "start getdata");
+					MusicUtils.queryMusic(MainContentActivity.this);
 					MusicUtils.queryAlbums(MainContentActivity.this);
 					MusicUtils.queryArtist(MainContentActivity.this);
 					MusicUtils.queryFolder(MainContentActivity.this);
@@ -301,6 +303,9 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 				break;
 			case BROADCAST_DOWNLOADED:
 				Toast.makeText(getApplicationContext(), name + "下载完毕，请重新扫描", Toast.LENGTH_SHORT).show();
+				String path = intent.getStringExtra("path");
+				MusicUtils.insertSingleSong(path, context);
+				mMainFragment.refreshNum();
 				break;
 			}
 			

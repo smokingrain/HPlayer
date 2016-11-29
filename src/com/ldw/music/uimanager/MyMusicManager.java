@@ -58,7 +58,6 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private MusicTimer mMusicTimer;
 	private MusicPlayBroadcast mPlayBroadcast;
 
-	private int mFrom;
 	private Object mObj;
 
 	private RelativeLayout mBottomLayout, mMainLayout;
@@ -78,7 +77,6 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 
 	public View getView(int from, Object object) {
 		View contentView = mInflater.inflate(R.layout.mymusic, null);
-		mFrom = from;
 		mObj = object;
 		initBg(contentView);
 		initView(contentView);
@@ -168,46 +166,19 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 						.playById(mAdapter.getData().get(position).songId);
 			}
 		});
-		StringBuffer select = new StringBuffer();
-		switch (mFrom) {
-		case START_FROM_ARTIST:
-			ArtistInfo artistInfo = (ArtistInfo) mObj;
-			// select.append(" and " + Media.ARTIST + " = '"
-			// + artistInfo.artist_name + "'");
-			mAdapter.setData(MusicUtils.queryMusic(mActivity,
-					select.toString(), artistInfo.artist_name,
-					START_FROM_ARTIST));
-			break;
-		case START_FROM_ALBUM:
-			AlbumInfo albumInfo = (AlbumInfo) mObj;
-			// select.append(" and " + Media.ALBUM_ID + " = "
-			// + albumInfo.album_id);
-			mAdapter.setData(MusicUtils.queryMusic(mActivity,
-					select.toString(), albumInfo.album_id + "",
-					START_FROM_ALBUM));
-			break;
-		case START_FROM_FOLDER:
-			FolderInfo folderInfo = (FolderInfo) mObj;
-			// select.append(" and " + Media.DATA + " like '"
-			// + folderInfo.folder_path + File.separator + "%'");
-			mAdapter.setData(MusicUtils.queryMusic(mActivity,
-					select.toString(), folderInfo.folder_path,
-					START_FROM_FOLDER));
-			break;
-		case START_FROM_FAVORITE:
-			mAdapter.setData(MusicUtils.queryFavorite(mActivity),
-					START_FROM_FAVORITE);
-			break;
-		default:
-			mAdapter.setData(MusicUtils.queryMusic(mActivity, START_FROM_LOCAL));
-			break;
-		}
+		Log.i("com.xk.hplayer", "init music view");
+		mAdapter.setData(MusicUtils.queryMusic(mActivity));
 	}
 
 	private class MusicPlayBroadcast extends BroadcastReceiver {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			if(BROADCAST_QUERY_COMPLETE_NAME.equals(intent.getAction())) {
+				mAdapter.setData(MusicUtils.queryMusic(mActivity));
+				return ;
+			}
+			
 			if (intent.getAction().equals(BROADCAST_NAME)) {
 				MusicInfo music = new MusicInfo();
 				int playState = intent.getIntExtra(PLAY_STATE_NAME, MPS_NOFILE);
@@ -301,6 +272,12 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	@Override
 	public View getView() {
 		return null;
+	}
+	
+	@Override
+	public void reflushView(int from) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
