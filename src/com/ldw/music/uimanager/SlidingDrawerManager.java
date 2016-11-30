@@ -454,8 +454,21 @@ public class SlidingDrawerManager implements OnClickListener,
 		String lyricFilePath = MusicApp.lrcPath + "/" + lrcName
 				+ ".lrc";
 		File lyricfile = new File(lyricFilePath);
-
-		if (lyricfile.exists()) {
+		
+		String zlrcFilePath = MusicApp.lrcPath + "/" + lrcName
+				+ ".zlrc";
+		File zlrcFile = new File(zlrcFilePath);
+		
+		String krcFilePath = MusicApp.lrcPath + "/" + lrcName
+				+ ".krc";
+		File krcFile = new File(krcFilePath);
+		
+		
+		if(zlrcFile.exists()) {
+			mLyricLoadHelper.loadLyric(zlrcFilePath, playingSong.duration);
+		}else if(krcFile.exists()) {
+			mLyricLoadHelper.loadLyric(krcFilePath, playingSong.duration);
+		}else if (lyricfile.exists()) {
 			// 本地有歌词，直接读取
 			// Log.i(TAG, "loadLyric()--->本地有歌词，直接读取");
 			mLyricLoadHelper.loadLyric(lyricFilePath, playingSong.duration);
