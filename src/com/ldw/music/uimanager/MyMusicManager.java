@@ -176,6 +176,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 		public void onReceive(Context context, Intent intent) {
 			if(BROADCAST_QUERY_COMPLETE_NAME.equals(intent.getAction())) {
 				mAdapter.setData(MusicUtils.queryMusic(mActivity));
+				mAdapter.refreshPlayingList();
 				return ;
 			}
 			
