@@ -183,14 +183,14 @@ public class MyAdapter extends BaseAdapter implements IConstants {
 						notifyDataSetChanged();
 					}
 //					music.favorite = 0;
-					mFavoriteDao.deleteById(music._id);
-					mMusicDao.setFavoriteStateById(music._id, 0);
+					mFavoriteDao.deleteById(music.songId);
+					mMusicDao.setFavoriteStateById(music.songId, 0);
 					viewHolder.favoriteIv.setImageResource(R.drawable.icon_favourite_normal);
 					mSdm.refreshFavorite(0);
 				} else {
 //					music.favorite = 1;
 					mFavoriteDao.saveMusicInfo(music);
-					mMusicDao.setFavoriteStateById(music._id, 1);
+					mMusicDao.setFavoriteStateById(music.songId, 1);
 					viewHolder.favoriteIv.setImageResource(R.drawable.icon_favourite_checked);
 					mMusicList.get(position).favorite = 1;
 					mSdm.refreshFavorite(1);

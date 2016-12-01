@@ -328,11 +328,11 @@ public class SlidingDrawerManager implements OnClickListener,
 			if (!mIsFavorite) {
 				startAnimation(mMoveIv);
 				mFavoriteDao.saveMusicInfo(mCurrentMusicInfo);
-				mMusicDao.setFavoriteStateById(mCurrentMusicInfo._id, 1);
+				mMusicDao.setFavoriteStateById(mCurrentMusicInfo.songId, 1);
 				mFavoriteBtn.setImageResource(R.drawable.icon_favorite_on);
 			} else {
-				mFavoriteDao.deleteById(mCurrentMusicInfo._id);
-				mMusicDao.setFavoriteStateById(mCurrentMusicInfo._id, 0);
+				mFavoriteDao.deleteById(mCurrentMusicInfo.songId);
+				mMusicDao.setFavoriteStateById(mCurrentMusicInfo.songId, 0);
 				mFavoriteBtn.setImageResource(R.drawable.icon_favorite);
 			}
 			mIsFavorite = !mIsFavorite;

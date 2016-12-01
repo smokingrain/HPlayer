@@ -79,15 +79,15 @@ public class DownloadService extends Service implements IConstants{
 					try {
 						SearchInfo info = queue.take();
 						if(null != info) {
-							String url=info.url;
-							String lrcUrl = info.lrcURL;
-							String realUrl=HTTPUtil.getInstance("player").getHtml(url);
-							SongLocation loc=HTTPUtil.getInstance("player").getInputStream(realUrl);
 							String parent=MusicApp.musicPath;
 							String lrcParent=MusicApp.lrcPath;
 							File file=new File(parent,info.singer+" - "+info.name+"."+info.type);
 							File lrcFile=new File(lrcParent,info.singer+" - "+info.name+"." + ".lrc");
 							if(!file.exists()){
+								String url=info.url;
+								String lrcUrl = info.lrcURL;
+								String realUrl=HTTPUtil.getInstance("player").getHtml(url);
+								SongLocation loc=HTTPUtil.getInstance("player").getInputStream(realUrl);
 								File temp = new File(parent,"temp_"+System.currentTimeMillis() + info.type);
 								String html = HTTPUtil.getInstance("player").getHtml(lrcUrl);
 								LrcInfo lrcs = SongSeacher.perseFromHTML(html);
@@ -121,13 +121,18 @@ public class DownloadService extends Service implements IConstants{
 									sendBroadcast(downloadIntent);
 								}finally{
 									temp.delete();
+									try {
+										loc.input.close();
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 								}
-							}
-							try {
-								loc.input.close();
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+							}else{
+								Intent downloadIntent = new Intent(BROADCAST_DOWNLOADED_FILEEXISTS);
+								downloadIntent.putExtra("name", info.name);
+								downloadIntent.putExtra("path", file.getAbsolutePath());
+								sendBroadcast(downloadIntent);
 							}
 							Log.i("com.xk.hplayer", info.name + " 下载完成");
 						}

@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -198,7 +199,7 @@ public class MusicUtils implements IConstants {
 	 * @param from 不同的界面进来要做不同的查询
 	 * @return
 	 */
-	public static List<MusicInfo> queryMusic(Context context) {
+	public static List<MusicInfo> queryMusic(Context context, int from) {
 		if(mMusicInfoDao == null) {
 			mMusicInfoDao = new MusicInfoDao(context);
 		}
@@ -214,18 +215,25 @@ public class MusicUtils implements IConstants {
 		if(sp.getFilterTime()) {
 			select.append(" and " + Media.DURATION + " > " + FILTER_DURATION);
 		}
-		
-		if (mMusicInfoDao.hasData()) {
-			return mMusicInfoDao.getMusicInfo();
-		} else {
-//			List<MusicInfo> list = getMusicLst(sp);
-			Log.i("com.xk.hplayer", "no data found!");
-			List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
-					select.toString(), null,
-					MediaStore.Audio.Media.ARTIST_KEY));
-			mMusicInfoDao.saveMusicInfo(list);
-			return list;
+		switch(from) {
+		case START_FROM_LOCAL:
+			if (mMusicInfoDao.hasData()) {
+				return mMusicInfoDao.getMusicInfo();
+			} else {
+//				List<MusicInfo> list = getMusicLst(sp);
+				Log.i("com.xk.hplayer", "no data found!");
+				List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
+						select.toString(), null,
+						MediaStore.Audio.Media.ARTIST_KEY));
+				mMusicInfoDao.saveMusicInfo(list);
+				return list;
+			}
+		case START_FROM_FAVORITE:
+			return queryFavorite(context);
+			default:break;
 		}
+		
+		return Collections.emptyList();
 
 	}
 
@@ -237,7 +245,11 @@ public class MusicUtils implements IConstants {
 		List<MusicInfo> list = getMusicList(cr.query(uri, proj_music,
 				select.toString(), null,
 				MediaStore.Audio.Media.ARTIST_KEY));
-		mMusicInfoDao.saveMusicInfo(list);
+		try {
+			mMusicInfoDao.saveMusicInfo(list);
+		} catch (Exception e) {
+			//可能已经存在，不管了
+		}
 	}
 
 	private static List<MusicInfo> getMusicList(Cursor cursor) {
@@ -258,6 +270,10 @@ public class MusicUtils implements IConstants {
 					.getColumnIndex(MediaStore.Audio.Media.TITLE));
 			music.artist = cursor.getString(cursor
 					.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+			
+			if(("????".equals(music.artist) || "<unknown>".equals(music.artist)) && music.musicName.indexOf("-") > 0) {
+				music.artist = music.musicName.split("-")[0].trim();
+			}
 			
 			String filePath = cursor.getString(cursor
 					.getColumnIndex(MediaStore.Audio.Media.DATA));

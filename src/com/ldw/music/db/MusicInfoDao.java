@@ -52,7 +52,6 @@ public class MusicInfoDao implements IConstants {
 		List<MusicInfo> list = new ArrayList<MusicInfo>();
 		while(cursor.moveToNext()) {
 			MusicInfo music = new MusicInfo();
-			music._id = cursor.getInt(cursor.getColumnIndex("_id"));
 			music.songId = cursor.getInt(cursor.getColumnIndex("songid"));
 			music.albumId = cursor.getInt(cursor.getColumnIndex("albumid"));
 			music.duration = cursor.getInt(cursor.getColumnIndex("duration"));
@@ -84,7 +83,7 @@ public class MusicInfoDao implements IConstants {
 	
 	public void setFavoriteStateById(int id, int favorite) {
 		SQLiteDatabase db = DatabaseHelper.getInstance(mContext);
-		String sql = "update " + TABLE_MUSIC + " set favorite = " + favorite + " where _id = " + id;
+		String sql = "update " + TABLE_MUSIC + " set favorite = " + favorite + " where songId = " + id;
 		db.execSQL(sql);
 	}
 	

@@ -142,7 +142,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 					mHandler.sendMessageDelayed(mHandler.obtainMessage(), 3000);
 				} else {
 					Log.i("com.xk.hplayer", "start getdata");
-					MusicUtils.queryMusic(MainContentActivity.this);
+					MusicUtils.queryMusic(MainContentActivity.this,START_FROM_LOCAL);
 					MusicUtils.queryAlbums(MainContentActivity.this);
 					MusicUtils.queryArtist(MainContentActivity.this);
 					MusicUtils.queryFolder(MainContentActivity.this);
@@ -297,16 +297,24 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String name = intent.getStringExtra("name");
+			String path = "";
 			switch(intent.getAction()) {
 			case BROADCAST_DOWNLOAD_FAILED:
 				Toast.makeText(getApplicationContext(), name + "下载失败，请重试。", Toast.LENGTH_SHORT).show();
 				break;
 			case BROADCAST_DOWNLOADED:
-				Toast.makeText(getApplicationContext(), name + "下载完毕，请重新扫描", Toast.LENGTH_SHORT).show();
-				String path = intent.getStringExtra("path");
+				Toast.makeText(getApplicationContext(), name + "下载完毕", Toast.LENGTH_SHORT).show();
+				path = intent.getStringExtra("path");
 				MusicUtils.insertSingleSong(path, context);
 				mMainFragment.refreshNum();
 				break;
+			case BROADCAST_DOWNLOADED_FILEEXISTS :
+				Toast.makeText(getApplicationContext(), name + "已存在", Toast.LENGTH_SHORT).show();
+				path = intent.getStringExtra("path");
+				MusicUtils.insertSingleSong(path, context);
+				mMainFragment.refreshNum();
+				break;
+				default:break;
 			}
 			
 			

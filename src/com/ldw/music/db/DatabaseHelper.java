@@ -14,7 +14,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static SQLiteDatabase mDb;
 	private static DatabaseHelper mHelper;
-	private static final int DB_VERSION = 4;
+	private static final int DB_VERSION = 5;
 	private static final String DB_NAME = "musicstore_new";
 	private static final String TABLE_ALBUM = "album_info";
 	private static final String TABLE_ARTIST = "artist_info";
@@ -50,8 +50,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		Log.i("com.xk.hplayer", "create db!");
 		db.execSQL("create table "
 				+ TABLE_MUSIC
-				+ " (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ " songid integer, albumid integer, duration integer, musicname varchar(10), "
+				+ "( songid integer PRIMARY KEY," 
+				+ " albumid integer, duration integer, musicname varchar(10), "
 				+ "artist char, data char, folder char, musicnamekey char, artistkey char, favorite integer)");
 		Log.i("com.xk.hplayer", "create music!");
 		db.execSQL("create table "
@@ -70,8 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			db.execSQL("create table "
 					+ TABLE_FAVORITE
-					+ " (_id integer,"
-					+ " songid integer, albumid integer, duration integer, musicname varchar(10), "
+					+ " (songid integer, albumid integer, duration integer, musicname varchar(10), "
 					+ "artist char, data char, folder char, musicnamekey char, artistkey char, favorite integer)");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
