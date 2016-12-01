@@ -59,6 +59,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private MusicPlayBroadcast mPlayBroadcast;
 
 	private Object mObj;
+	private int from;
 
 	private RelativeLayout mBottomLayout, mMainLayout;
 	private Bitmap defaultArtwork;
@@ -78,6 +79,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	public View getView(int from, Object object) {
 		View contentView = mInflater.inflate(R.layout.mymusic, null);
 		mObj = object;
+		this.from = from;
 		initBg(contentView);
 		initView(contentView);
 
@@ -167,7 +169,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 			}
 		});
 		Log.i("com.xk.hplayer", "init music view");
-		mAdapter.setData(MusicUtils.queryMusic(mActivity));
+		mAdapter.setData(MusicUtils.queryMusic(mActivity, from));
 	}
 
 	private class MusicPlayBroadcast extends BroadcastReceiver {
@@ -175,7 +177,8 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if(BROADCAST_QUERY_COMPLETE_NAME.equals(intent.getAction())) {
-				mAdapter.setData(MusicUtils.queryMusic(mActivity));
+				mAdapter.setData(MusicUtils.queryMusic(mActivity, from));
+				mAdapter.refreshPlayingList();
 				return ;
 			}
 			

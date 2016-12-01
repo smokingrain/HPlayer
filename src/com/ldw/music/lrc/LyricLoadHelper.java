@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ldw.music.utils.FileUtils;
+import com.ldw.music.utils.JSONUtil;
+
 import android.annotation.SuppressLint;
 import android.util.Log;
 
@@ -100,9 +103,16 @@ public class LyricLoadHelper {
 				Log.i(TAG, "歌词文件存在");
 				mHasLyric = true;
 				try {
+					if(lyricPath.toLowerCase().endsWith(".lrc")) {
+						LrcParser parser = new LrcParser(allLength);
+						mLyricSentences = parser.parser(lyricPath);
+					}else if (lyricPath.toLowerCase().endsWith(".krc")) {
+						mLyricSentences = KrcText.fromKRC(lyricPath);
+					}else if (lyricPath.toLowerCase().endsWith(".zlrc")) {
+						String data=FileUtils.readString(lyricPath);
+						mLyricSentences = JSONUtil.toBean(data, JSONUtil.getCollectionType(List.class, XRCLine.class));
+					}
 					
-					LrcParser parser = new LrcParser(allLength);
-					mLyricSentences = parser.parser(lyricPath);
 
 					// 按时间排序句子集合
 					Collections.sort(mLyricSentences,

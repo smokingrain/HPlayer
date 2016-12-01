@@ -30,7 +30,6 @@ public class FavoriteInfoDao implements IConstants {
 	public void saveMusicInfo(MusicInfo music) {
 		SQLiteDatabase db = DatabaseHelper.getInstance(mContext);
 		ContentValues cv = new ContentValues();
-		cv.put("_id", music._id);
 		cv.put("songid", music.songId);
 		cv.put("albumid", music.albumId);
 		cv.put("duration", music.duration);
@@ -44,9 +43,9 @@ public class FavoriteInfoDao implements IConstants {
 		db.insert(TABLE_FAVORITE, null, cv);
 	}
 	
-	public void deleteById(int _id) {
+	public void deleteById(int songId) {
 		SQLiteDatabase db = DatabaseHelper.getInstance(mContext);
-		db.delete(TABLE_FAVORITE, "_id=?", new String[]{ _id+"" });
+		db.delete(TABLE_FAVORITE, "songId=?", new String[]{ songId+"" });
 	}
 
 	public List<MusicInfo> getMusicInfo() {
@@ -60,7 +59,6 @@ public class FavoriteInfoDao implements IConstants {
 		List<MusicInfo> list = new ArrayList<MusicInfo>();
 		while (cursor.moveToNext()) {
 			MusicInfo music = new MusicInfo();
-			music._id = cursor.getInt(cursor.getColumnIndex("_id"));
 			music.songId = cursor.getInt(cursor.getColumnIndex("songid"));
 			music.albumId = cursor.getInt(cursor.getColumnIndex("albumid"));
 			music.duration = cursor.getInt(cursor.getColumnIndex("duration"));
