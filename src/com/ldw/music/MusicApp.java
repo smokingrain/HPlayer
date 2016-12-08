@@ -9,12 +9,17 @@ import android.os.Environment;
 
 public class MusicApp extends Application {
 	
+	public static final Long SERVER=-1L;
+	public static final String MSG_DISCONNECT="disconnect";
+	public static final String APP="hp";
+	
 	public static boolean mIsSleepClockSetting = false;
 	public static ServiceManager mServiceManager = null;
 	private static String rootPath = "/mymusic";
 	public static String lrcPath = "/lrc";
 	public static String musicPath = "/music";
 	public static String picPath = "/pic";
+	public static Long cid;
 	
 	@Override
 	public void onCreate() {

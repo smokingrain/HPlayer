@@ -1,31 +1,27 @@
 package com.ldw.music.utils;
 
 public class PackageInfo {
-	private String to;
+	private Long to;
 	private String msg;
-	private String from;
+	private Long from;
 	private String type;
+	private String app;
 
 	public PackageInfo() {
-		super();
 	}
-	public PackageInfo(String to, String msg, String from) {
-		super();
-		this.to = to;
-		this.msg = msg;
-		this.from = from;
-	}
-	public PackageInfo(String to, String msg, String from,String type) {
+	
+	public PackageInfo(Long to, String msg, Long from,String type,String app) {
 		super();
 		this.to = to;
 		this.msg = msg;
 		this.from = from;
 		this.type = type;
+		this.setApp(app);
 	}
-	public String getTo() {
+	public Long getTo() {
 		return to;
 	}
-	public void setTo(String to) {
+	public void setTo(Long to) {
 		this.to = to;
 	}
 	public String getMsg() {
@@ -34,10 +30,10 @@ public class PackageInfo {
 	public void setMsg(String msg) {
 		this.msg = msg;
 	}
-	public String getFrom() {
+	public Long getFrom() {
 		return from;
 	}
-	public void setFrom(String from) {
+	public void setFrom(Long from) {
 		this.from = from;
 	}
 	public String getType() {
@@ -45,6 +41,12 @@ public class PackageInfo {
 	}
 	public void setType(String type) {
 		this.type = type;
+	}
+	public String getApp() {
+		return app;
+	}
+	public void setApp(String app) {
+		this.app = app;
 	}
 	
 }
