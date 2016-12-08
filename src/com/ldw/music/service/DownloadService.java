@@ -81,8 +81,8 @@ public class DownloadService extends Service implements IConstants{
 						if(null != info) {
 							String parent=MusicApp.musicPath;
 							String lrcParent=MusicApp.lrcPath;
-							File file=new File(parent,info.singer+" - "+info.name+"."+info.type);
-							File lrcFile=new File(lrcParent,info.singer+" - "+info.name+"." + ".lrc");
+							File file=new File(parent,info.singer+" - "+info.name +"."+ info.type);
+							File lrcFile=new File(lrcParent,info.singer+" - "+info.name + ".lrc");
 							if(!file.exists()){
 								String url=info.url;
 								String lrcUrl = info.lrcURL;
