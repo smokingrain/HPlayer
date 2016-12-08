@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.storage;
 
 import com.ldw.music.activity.IConstants;

@@ -39,7 +39,6 @@ public class HttpClientHelper {
     public static synchronized HttpClient getHttpClient() {
  
         if (null == httpClient) {
-            // ��ʼ������
             try {
                 KeyStore trustStore = KeyStore.getInstance(KeyStore
                         .getDefaultType());
@@ -54,14 +53,10 @@ public class HttpClientHelper {
                         HTTP.DEFAULT_CONTENT_CHARSET);
                 HttpProtocolParams.setUseExpectContinue(params, true);
  
-                // �������ӹ������ĳ�ʱ
                 ConnManagerParams.setTimeout(params, 10000);
-                // �������ӳ�ʱ
                 HttpConnectionParams.setConnectionTimeout(params, 10000);
-                // ����socket��ʱ
                 HttpConnectionParams.setSoTimeout(params, 10000);
  
-                // ����http https֧��
                 SchemeRegistry schReg = new SchemeRegistry();
                 schReg.register(new Scheme("http", PlainSocketFactory
                         .getSocketFactory(), 80));

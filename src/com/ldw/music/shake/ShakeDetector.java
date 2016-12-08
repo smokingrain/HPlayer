@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.shake;
 import android.content.Context;
 import android.hardware.Sensor;

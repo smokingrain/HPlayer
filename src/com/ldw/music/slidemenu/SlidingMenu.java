@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.slidemenu;
 
 import java.lang.reflect.Method;

@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.aidl;
 import com.ldw.music.model.MusicInfo;
 import android.graphics.Bitmap;

@@ -1,6 +1,3 @@
-/**
- * Copyright (c) www.longdw.com
- */
 package com.ldw.music.fragment;
 
 import android.app.ProgressDialog;
