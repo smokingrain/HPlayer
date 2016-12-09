@@ -11,7 +11,18 @@ public class MusicApp extends Application {
 	
 	public static final Long SERVER=-1L;
 	public static final String MSG_DISCONNECT="disconnect";
+	public static final String MSG_ASK_SEND = "asksend";
+	public static final String MSG_SEND_DATA = "senddata";
+	public static final String MSG_SEND_END = "sendend";
+	public static final String RESULT_FILE_EXISTS = "fileexists";
+	public static final String RESULT_OK = "sendok";
+	public static final String RESULT_OVER = "sendover";
+	public static final String RESULT_NO_CLIENT = "noclient";
+	public static final String RESULT_WORKING = "working";
+	
+	
 	public static final String APP="hp";
+	public static final String name = "hbb";
 	
 	public static boolean mIsSleepClockSetting = false;
 	public static ServiceManager mServiceManager = null;

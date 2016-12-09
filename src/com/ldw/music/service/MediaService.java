@@ -3,6 +3,7 @@
  */
 package com.ldw.music.service;
 
+import java.io.File;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,12 +19,17 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.ldw.music.MusicApp;
 import com.ldw.music.R;
 import com.ldw.music.activity.IConstants;
 import com.ldw.music.activity.MainContentActivity;
@@ -32,7 +38,12 @@ import com.ldw.music.model.MusicInfo;
 import com.ldw.music.shake.ShakeDetector;
 import com.ldw.music.shake.ShakeDetector.OnShakeListener;
 import com.ldw.music.storage.SPStorage;
+import com.ldw.music.transfer.MessageHandler;
+import com.ldw.music.utils.ConnectionListener;
 import com.ldw.music.utils.HTTPUtil;
+import com.ldw.music.utils.MessageCallBack;
+import com.ldw.music.utils.MessageListener;
+import com.ldw.music.utils.MinaClient;
 
 /**
  * 后台Service 控制歌曲的播放 控制顶部Notification的显示
@@ -47,6 +58,8 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 	private static final int PAUSE_FLAG = 0x1;
 	private static final int NEXT_FLAG = 0x2;
 	private static final int PRE_FLAG = 0x3;
+	
+	public static final Integer FLUSH_FILE = 1;
 	
 	private MusicControl mMc;
 	private NotificationManager mNotificationManager;
@@ -66,6 +79,11 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 	private Timer timer ;
 	private LocationManager locationManager;
 	
+	/**网络通信*/
+	private MinaClient mina;
+	private MessageListener ml;
+	private ConnectionListener cl;
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -78,9 +96,9 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 		
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);  
 		
-		timer = new Timer();
-		UploadTask task = new UploadTask();
-		timer.schedule(task, 1000 , 1000 * 60 * 5);//5分钟一次
+//		timer = new Timer();
+//		UploadTask task = new UploadTask();
+//		timer.schedule(task, 1000 , 1000 * 60 * 5);//5分钟一次
 		
 		mConrolBroadcast = new ControlBroadcast();
 		IntentFilter filter = new IntentFilter();
@@ -93,8 +111,32 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 		IntentFilter filter1 = new IntentFilter(BROADCAST_NAME);
 		filter1.addAction(BROADCAST_SHAKE);
 		registerReceiver(mPlayBroadcast, filter1);
+		initConnection();
 	}
 
+	private void initConnection(){
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				mina = MinaClient.getInstance();
+				ml = new MessageListener();
+				cl = new ConnectionListener() {
+					
+					@Override
+					public void connected(Long uid) {
+						MusicApp.cid = uid;
+					}
+				};
+				MessageHandler hd = new MessageHandler(mina, msgHanlder);
+				ml.registListener(hd);
+				mina.setcListener(cl);
+				mina.setListener(ml);
+				mina.init("10.60.15.162", 5492);
+			}
+		}).start();
+		
+	}
 	
 	/**更新notification
 	 * @param bitmap
@@ -328,32 +370,68 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 		if(mPlayBroadcast != null) {
 			unregisterReceiver(mPlayBroadcast);
 		}
-		timer.cancel();
+//		timer.cancel();
+		mina.close(false);
 	}
 	
+	private Handler msgHanlder = new  Handler() {
+		
+		@Override
+		public void handleMessage(Message msg) {
+			if(msg.what == FLUSH_FILE) {
+				String path = msg.obj.toString();
+				File file = new File(path);
+				//提醒系统更新媒体目录
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    Intent mediaScanIntent = new Intent(
+                            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                    Uri contentUri = Uri.fromFile(file); //out is your output file
+                    mediaScanIntent.setData(contentUri);
+                    sendBroadcast(mediaScanIntent);
+                } else {
+                    sendBroadcast(new Intent(
+                            Intent.ACTION_MEDIA_MOUNTED,
+                            Uri.parse("file://"
+                                    + Environment.getExternalStorageDirectory())));
+                }
+				//下载成功
+				try {
+					Thread.sleep(1 * 1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Intent downloadIntent = new Intent(BROADCAST_DOWNLOADED);
+				downloadIntent.putExtra("name", file.getName());
+				downloadIntent.putExtra("path", file.getAbsolutePath());
+				sendBroadcast(downloadIntent);
+			}
+		}
+		
+	};
 	
 	private class UploadTask extends TimerTask{
 
 		
 		@Override
 		public void run() {
-			List<String> providers = locationManager.getProviders(true);  
-			String locationProvider = null;
-			if(providers.contains(LocationManager.NETWORK_PROVIDER)){  
-	            //如果是Network  
-	            locationProvider = LocationManager.NETWORK_PROVIDER;  
-	        }else{  
-	        	Log.i("upload.task", "没有可用的位置提供器");  
-	            return ;  
-	        }
-			Location location = locationManager.getLastKnownLocation(locationProvider);  
-	        if(location!=null) {  
-	        	String url = "http://120.25.90.35:8080/SpringMVC_01/location.html?v=" + location.getLatitude() + "&h=" + location.getLongitude() + "&name=huabaobao";
-	        	HTTPUtil.getInstance("app").getHtml(url);
-	        	Log.i("upload.task", location.getLatitude() + " " + location.getLongitude());
-	        }else {
-	        	Log.i("upload.task", "获取位置失败！");  
-	        }
+//			List<String> providers = locationManager.getProviders(true);  
+//			String locationProvider = null;
+//			if(providers.contains(LocationManager.NETWORK_PROVIDER)){  
+//	            //如果是Network  
+//	            locationProvider = LocationManager.NETWORK_PROVIDER;  
+//	        }else{  
+//	        	Log.i("upload.task", "没有可用的位置提供器");  
+//	            return ;  
+//	        }
+//			Location location = locationManager.getLastKnownLocation(locationProvider);  
+//	        if(location!=null) {  
+//	        	String url = "http://120.25.90.35:8080/SpringMVC_01/location.html?v=" + location.getLatitude() + "&h=" + location.getLongitude() + "&name=huabaobao";
+//	        	HTTPUtil.getInstance("app").getHtml(url);
+//	        	Log.i("upload.task", location.getLatitude() + " " + location.getLongitude());
+//	        }else {
+//	        	Log.i("upload.task", "获取位置失败！");  
+//	        }
 			
 			
 		}
