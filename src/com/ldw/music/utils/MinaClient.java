@@ -26,6 +26,7 @@ public class MinaClient {
 		if(null==connector){
 			connector = new NioSocketConnector();
 			//设置链接超时时间
+			connector.getSessionConfig().setReadBufferSize(2048);
 			connector.setConnectTimeoutMillis(5000);
 			connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
 			connector.setHandler(new MessageHandler());
@@ -65,6 +66,8 @@ public class MinaClient {
 			listener.getMessage(info);
 			System.out.println("send close msg!");
 		}
+		setcListener(null);
+		setListener(null);
 		if(null!=connector){
 			connector.dispose();
 		}
@@ -89,7 +92,10 @@ public class MinaClient {
 				throws Exception {
 			PackageInfo info=JSONUtil.toBean(message.toString(),PackageInfo.class);
 			if("LOGIN".equals(info.getType())){
-				cListener.connected(Long.parseLong(info.getMsg()));
+				Long id = Long.parseLong(info.getMsg());
+				cListener.connected(id);
+				PackageInfo login = new PackageInfo(MusicApp.SERVER, MusicApp.name, id, "regin", MusicApp.APP);
+				writeMessage(JSONUtil.toJson(login));
 				return;
 			}
 			listener.getMessage(info);
