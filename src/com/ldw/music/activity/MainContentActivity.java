@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -69,6 +70,10 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		mScreenWidth = metric.widthPixels;
 		Log.i("com.xk.hplayer", "start app!");
 		initSDCard();
+		
+		IntentFilter headSetFilter = new IntentFilter();
+		headSetFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+		registerReceiver(mHeadSetReceiver, headSetFilter);
 		
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(ALARM_CLOCK_BROADCAST);
@@ -278,6 +283,14 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		am.cancel(pendingIntent);
 		MusicApp.mIsSleepClockSetting = false;
 	}
+	
+	private BroadcastReceiver mHeadSetReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context paramContext, Intent paramIntent) {
+			MusicApp.mServiceManager.pause();
+		}
+	};
 	
 	private BroadcastReceiver mAlarmReceiver = new BroadcastReceiver() {
 
