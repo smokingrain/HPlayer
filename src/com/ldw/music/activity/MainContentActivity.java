@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -37,6 +39,7 @@ import com.ldw.music.fragment.MenuFragment;
 import com.ldw.music.slidemenu.SlidingMenu;
 import com.ldw.music.utils.MusicUtils;
 import com.ldw.music.utils.SplashScreen;
+import com.ldw.music.view.DesktopLyricView;
 
 /**
  * 主类，首次进入应用会到这里
@@ -46,7 +49,7 @@ import com.ldw.music.utils.SplashScreen;
  */
 @SuppressLint("HandlerLeak")
 public class MainContentActivity extends FragmentActivity implements IConstants {
-
+	private final String TAG = MainContentActivity.class.getSimpleName();
 	public static final String ALARM_CLOCK_BROADCAST = "alarm_clock_broadcast";
 	public SlidingMenu mSlidingMenu;
 	private List<OnBackListener> mBackListeners = new ArrayList<OnBackListener>();
@@ -57,6 +60,8 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	private SplashScreen mSplashScreen;
 	private int mScreenWidth;
 	
+	private DesktopLyricView pv;
+	
 	public interface OnBackListener {
 		public abstract void onBack();
 	}
@@ -64,7 +69,6 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
-
 		DisplayMetrics metric = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metric);
 		mScreenWidth = metric.widthPixels;
@@ -332,8 +336,55 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	};
 	
 	@Override
+	protected void onResume() {
+		hide();
+		super.onResume();
+	}
+	
+	
+
+	@Override
+	protected void onPause() {
+		Log.i(TAG, "MAIN PAUSE");
+		show();
+		super.onPause();
+	}
+
+	private void show() {
+        Rect frame = new Rect();  
+        getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);  
+        DesktopLyricView.TOOL_BAR_HIGH = frame.top;  
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);  
+        WindowManager.LayoutParams params = DesktopLyricView.params;  
+  
+        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT  
+                | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
+        params.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL  
+                | LayoutParams.FLAG_NOT_FOCUSABLE;  
+        params.width = WindowManager.LayoutParams.FILL_PARENT;  
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT;  
+        params.alpha = 80;  
+        params.gravity = Gravity.LEFT | Gravity.TOP;  
+        // 设置x、y初始值  
+        params.x = 0;  
+        params.y = wm.getDefaultDisplay().getHeight();  
+  
+        pv = new DesktopLyricView(this);  
+        wm.addView(pv, params);  
+    }
+	
+	private void hide() {
+		if(null != pv) {
+			WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+			wm.removeView(pv);
+			pv = null;
+		}
+	}
+	
+	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		hide();
 		unregisterReceiver(sdCardReceiver);
 		unregisterReceiver(mAlarmReceiver);
 		unregisterReceiver(mDownloadReceiver);

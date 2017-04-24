@@ -2,6 +2,7 @@ package com.ldw.music;
 
 import java.io.File;
 
+import com.ldw.music.lrc.LyricLoadHelper;
 import com.ldw.music.service.ServiceManager;
 
 import android.app.Application;
@@ -31,6 +32,8 @@ public class MusicApp extends Application {
 	public static String musicPath = "/music";
 	public static String picPath = "/pic";
 	public static Long cid;
+	
+	public static LyricLoadHelper mLyricLoadHelper = new LyricLoadHelper();
 	
 	@Override
 	public void onCreate() {
