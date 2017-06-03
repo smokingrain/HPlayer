@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -13,12 +14,17 @@ import com.ldw.music.MusicApp;
 import com.ldw.music.activity.IConstants;
 import com.ldw.music.db.DatabaseHelper;
 import com.ldw.music.lrc.LrcInfo;
+import com.ldw.music.lrc.XRCLine;
+import com.ldw.music.storage.SPStorage;
 import com.ldw.music.utils.FileUtils;
 import com.ldw.music.utils.HTTPUtil;
+import com.ldw.music.utils.IDownloadSource;
+import com.ldw.music.utils.JSONUtil;
 import com.ldw.music.utils.MusicUtils;
 import com.ldw.music.utils.SongLocation;
 import com.ldw.music.utils.SongSeacher;
 import com.ldw.music.utils.SongSeacher.SearchInfo;
+import com.ldw.music.utils.SourceFactory;
 
 import android.app.IntentService;
 import android.app.Service;
@@ -36,11 +42,14 @@ public class DownloadService extends Service implements IConstants{
 	public static final String DOWNLOAD_MUSIC = "DOWNLOAD_MUSIC";
 	private LinkedBlockingQueue<SearchInfo> queue = new LinkedBlockingQueue<SearchInfo>();
 	
+	private SPStorage mSp;
+	
 	private boolean running = true;
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		SearchInfo info = (SearchInfo) intent.getSerializableExtra("info");
+		Log.i("com.xk.hplayer","addTask");
+		SearchInfo info = (SearchInfo) intent.getParcelableExtra("info");
 		if(null != info) {
 			try {
 				queue.put(info);
@@ -56,17 +65,20 @@ public class DownloadService extends Service implements IConstants{
 	@Override
     public void onCreate()
     {
+		Log.i("com.xk.hplayer","onCreate");
         super.onCreate();
+        mSp = new SPStorage(getApplicationContext());
         doTasks();
-        Log.i("com.xk.hplayer","onCreate");
+        
     }
 
     @Override
     public void onDestroy()
     {
+    	Log.i("com.xk.hplayer","onDestroy");
         super.onDestroy();
         running = false;
-        Log.i("com.xk.hplayer","onDestroy");
+        
     }
     
     private void doTasks() {
@@ -82,18 +94,18 @@ public class DownloadService extends Service implements IConstants{
 							String parent=MusicApp.musicPath;
 							String lrcParent=MusicApp.lrcPath;
 							File file=new File(parent,info.singer+" - "+info.name +"."+ info.type);
-							File lrcFile=new File(lrcParent,info.singer+" - "+info.name + ".lrc");
+							File lrcFile=new File(lrcParent,info.singer+" - "+info.name + ".zlrc");
 							if(!file.exists()){
 								String url=info.url;
 								String lrcUrl = info.lrcURL;
-								String realUrl=HTTPUtil.getInstance("player").getHtml(url);
-								SongLocation loc=HTTPUtil.getInstance("player").getInputStream(realUrl);
+								IDownloadSource source = SourceFactory.getSource(mSp.getDataSource());
+								SongLocation loc=HTTPUtil.getInstance("player").getInputStream(source.getSongUrl(info));
 								File temp = new File(parent,"temp_"+System.currentTimeMillis() + info.type);
-								String html = HTTPUtil.getInstance("player").getHtml(lrcUrl);
-								LrcInfo lrcs = SongSeacher.perseFromHTML(html);
+								
+								List<XRCLine> lines = source.getLrc(lrcUrl);
 								try {
 									saveToFile(temp, file, loc.input);
-									saveLrc(lrcFile, lrcs);
+									saveLrc(lrcFile, lines);
 									//提醒系统更新媒体目录
 									if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 					                    Intent mediaScanIntent = new Intent(
@@ -153,20 +165,11 @@ public class DownloadService extends Service implements IConstants{
      * @param lrc
      * @param lrcs
      */
-    public static void saveLrc(File lrc, LrcInfo lrcs) {
-    	Map<Long ,String>ls=lrcs.getInfos();
-		StringBuffer sb=new StringBuffer();
-		for(Long time:ls.keySet()){
-			String text=ls.get(time);
-			long mil=(time%1000);
-			long sec=time/1000;
-			long mun=sec/60;
-			long second=sec%60;
-			sb.append("[").append(format(mun))
-			.append(":").append(format(second)).append(".")
-			.append(format(mil)).append("]").append(text).append("\r\n");
-		}
-		FileUtils.writeString(sb.toString(), lrc);
+    public static void saveLrc(File lrc, List<XRCLine> lines) {
+    	if(null != lines) {
+    		FileUtils.writeString(JSONUtil.toJson(lines), lrc);
+    	}
+		
     }
     
     /**
