@@ -11,6 +11,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -36,6 +38,7 @@ import com.ldw.music.db.DatabaseHelper;
 import com.ldw.music.db.MusicInfoDao;
 import com.ldw.music.fragment.MainFragment;
 import com.ldw.music.fragment.MenuFragment;
+import com.ldw.music.lrc.XRCLine;
 import com.ldw.music.slidemenu.SlidingMenu;
 import com.ldw.music.utils.MusicUtils;
 import com.ldw.music.utils.SplashScreen;
@@ -351,32 +354,42 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	}
 
 	private void show() {
+		List<XRCLine> sentences = MusicApp.mLyricLoadHelper.getLyricSentences();
+		if(sentences.isEmpty()) {
+			return;
+		}
         Rect frame = new Rect();  
         getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);  
         DesktopLyricView.TOOL_BAR_HIGH = frame.top;  
         WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);  
         WindowManager.LayoutParams params = DesktopLyricView.params;  
   
-        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT  
-                | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
-        params.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL  
-                | LayoutParams.FLAG_NOT_FOCUSABLE;  
-        params.width = WindowManager.LayoutParams.FILL_PARENT;  
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;  
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;  
-        params.alpha = 80;  
-        params.gravity = Gravity.LEFT | Gravity.TOP;  
+        //设置window type  
+        params.type = LayoutParams.TYPE_PHONE;   
+        //设置图片格式，效果为背景透明  
+        params.format = PixelFormat.RGBA_8888;   
+        //设置浮动窗口不可聚焦（实现操作除浮动窗口外的其他可见窗口的操作）  
+        params.flags = LayoutParams.FLAG_NOT_FOCUSABLE;        
+        //调整悬浮窗显示的停靠位置为左侧置顶  
+//        params.gravity = Gravity.LEFT | Gravity.TOP;         
+        // 以屏幕左上角为原点，设置x、y初始值，相对于gravity  
+        params.alpha = 10;  
         // 设置x、y初始值  
         params.x = 0;  
-        params.y = wm.getDefaultDisplay().getHeight();  
+        Point point = new Point();
+        wm.getDefaultDisplay().getSize(point);
+        params.y = point.y;  
   
-        pv = new DesktopLyricView(this);  
+        pv = new DesktopLyricView(this, sentences);  
+        
         wm.addView(pv, params);  
     }
 	
 	private void hide() {
 		if(null != pv) {
-			WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-			wm.removeView(pv);
+			pv.die();
 			pv = null;
 		}
 	}

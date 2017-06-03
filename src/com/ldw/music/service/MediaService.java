@@ -132,7 +132,7 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 				ml.registListener(hd);
 				mina.setcListener(cl);
 				mina.setListener(ml);
-				mina.init("10.60.15.162", 5492);
+				mina.init("120.25.90.35", 5492);
 			}
 		}).start();
 		

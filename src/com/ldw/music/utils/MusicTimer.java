@@ -15,7 +15,7 @@ public class MusicTimer {
 	
 	public final static int REFRESH_PROGRESS_EVENT = 0x100;
 	
-	private static final int INTERVAL_TIME = 1000;
+	private int intervalTime = 1000;
 	private Handler[] mHandler;
 	private Timer mTimer;
 	private TimerTask mTimerTask;
@@ -30,12 +30,13 @@ public class MusicTimer {
 		mTimer = new Timer();
 	}
 	
+	
 	public void startTimer() {
 		if (mHandler == null || mTimerStart) {
 			return;
 		}
 		mTimerTask = new MyTimerTask();
-		mTimer.schedule(mTimerTask, INTERVAL_TIME, INTERVAL_TIME);
+		mTimer.schedule(mTimerTask, intervalTime, intervalTime);
 		mTimerStart = true;
 	}
 
@@ -50,6 +51,10 @@ public class MusicTimer {
 		}
 	}
 	
+	public void setIntervalTime(int intervalTime) {
+		this.intervalTime = intervalTime;
+	}
+
 	class MyTimerTask extends TimerTask {
 
 		@Override

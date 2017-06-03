@@ -96,7 +96,6 @@ public class LyricLoadHelper {
 		Log.i(TAG, "LoadLyric begin,path is:" + lyricPath);
 		mHasLyric = false;
 		mLyricSentences.clear();
-
 		if (lyricPath != null) {
 			File file = new File(lyricPath);
 			if (file.exists()) {
