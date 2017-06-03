@@ -1,5 +1,10 @@
 package com.ldw.music.fragment;
 
+import java.util.Arrays;
+import java.util.List;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,11 +15,13 @@ import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.ldw.music.R;
 import com.ldw.music.activity.IConstants;
 import com.ldw.music.activity.MenuSettingActivity;
 import com.ldw.music.storage.SPStorage;
+import com.ldw.music.view.WheelView;
 
 /**
  * 
@@ -25,9 +32,12 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 	
 	private LinearLayout mAdviceLayout, mAboutLayout;
 	private CheckedTextView mChangeSongTv, mAutoLyricTv, mFilterSizeTv, mFilterTimeTv;
+	private TextView mDataSource;
 	private SPStorage mSp;
 	
 	private ImageButton mBackBtn;
+	
+	private List<String> dataSources = Arrays.asList(new String[]{"kugou","kuwo"});
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,15 +66,21 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		mFilterSizeTv = (CheckedTextView) view.findViewById(R.id.filter_size);
 		mFilterTimeTv = (CheckedTextView) view.findViewById(R.id.filter_time);
 		
+		mDataSource = (TextView) view.findViewById(R.id.data_source_selector);
+		
 		mChangeSongTv.setChecked(mSp.getShake());
 		mAutoLyricTv.setChecked(mSp.getAutoLyric());
 		mFilterSizeTv.setChecked(mSp.getFilterSize());
 		mFilterTimeTv.setChecked(mSp.getFilterTime());
 		
+		mDataSource.setText(mSp.getDataSource());
+		
 		mChangeSongTv.setOnClickListener(this);
 		mAutoLyricTv.setOnClickListener(this);
 		mFilterSizeTv.setOnClickListener(this);
 		mFilterTimeTv.setOnClickListener(this);
+		
+		mDataSource.setOnClickListener(this);
 	}
 
 	@Override
@@ -92,6 +108,25 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		case R.id.filter_time:
 			mFilterTimeTv.toggle();
 			mSp.saveFilterTime(mFilterTimeTv.isChecked());
+			break;
+		case R.id.data_source_selector:
+			String data = mSp.getDataSource();
+			View outerView = View.inflate(this.getActivity(), R.layout.datasource_selector, null);
+			WheelView wv = (WheelView) outerView.findViewById(R.id.wheel_view_wv);
+			wv.setOffset(2);
+            wv.setItems(dataSources);
+            wv.setSeletion(dataSources.indexOf(data));
+            wv.setOnWheelViewListener(new WheelView.OnWheelViewListener() {
+                @Override
+                public void onSelected(int selectedIndex, String item) {
+                	mDataSource.setText(item);
+                	mSp.setDataSource(item);
+                }
+            });
+            final Dialog dialog = new Dialog(this.getActivity(), R.style.lrc_dialog);
+            dialog.setContentView(outerView);
+            dialog.setCanceledOnTouchOutside(true);
+    		dialog.show();
 			break;
 		case R.id.backBtn:
 			((MenuSettingActivity)getActivity()).mViewPager.setCurrentItem(0, true);

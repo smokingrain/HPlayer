@@ -31,7 +31,10 @@ import android.widget.Toast;
 
 import com.ldw.music.R;
 import com.ldw.music.service.DownloadService;
+import com.ldw.music.storage.SPStorage;
+import com.ldw.music.utils.IDownloadSource;
 import com.ldw.music.utils.SongSeacher;
+import com.ldw.music.utils.SourceFactory;
 import com.ldw.music.utils.SongSeacher.SearchInfo;
 
 /**
@@ -55,6 +58,8 @@ public class MusicListSearchActivity extends Activity implements
 	
 	private int mScreenWidth;
 	
+	private SPStorage mSp;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -69,6 +74,7 @@ public class MusicListSearchActivity extends Activity implements
 		mInputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		handler = new SearchHandler(this);
+		mSp = new SPStorage(this);
 		initView();
 		initListView();
 	}
@@ -180,7 +186,8 @@ public class MusicListSearchActivity extends Activity implements
 				@Override
 				public void run() {
 					searching = true;
-					List<SearchInfo> result = SongSeacher.getSongFromKuwo(toSearch);
+					IDownloadSource source = SourceFactory.getSource(mSp.getDataSource());
+					List<SearchInfo> result = source.getSong(toSearch);
 					Message msg = new Message();
 					msg.obj = result;
 					handler.sendMessage(msg);
@@ -219,7 +226,7 @@ public class MusicListSearchActivity extends Activity implements
 			@Override
 			public void onClick(View v) {
 				if (v == okBtn) {
-					DownloadService.addDownloadTask(getApplicationContext(), info);
+					DownloadService.addDownloadTask(MusicListSearchActivity.this, info);
 					Toast.makeText(getApplicationContext(), "已加入下载列表", Toast.LENGTH_SHORT).show();
 				}
 				dialog.dismiss();

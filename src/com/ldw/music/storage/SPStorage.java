@@ -70,5 +70,14 @@ public class SPStorage implements IConstants {
 	public boolean getFilterTime() {
 		return mSp.getBoolean(SP_FILTER_TIME, false);
 	}
+	
+	public void setDataSource(String dataSource) {
+		mEditor.putString(SP_DATA_SOURCE, dataSource);
+		mEditor.commit();
+	}
+	
+	public String getDataSource() {
+		return mSp.getString(SP_DATA_SOURCE, "kugou");
+	}
 
 }

@@ -55,8 +55,10 @@ import com.ldw.music.service.DownloadService;
 import com.ldw.music.service.ServiceManager;
 import com.ldw.music.storage.SPStorage;
 import com.ldw.music.utils.HTTPUtil;
+import com.ldw.music.utils.IDownloadSource;
 import com.ldw.music.utils.MusicTimer;
 import com.ldw.music.utils.SongSeacher;
+import com.ldw.music.utils.SourceFactory;
 import com.ldw.music.utils.SongSeacher.SearchInfo;
 import com.ldw.music.view.MySlidingDrawer;
 
@@ -524,17 +526,17 @@ public class SlidingDrawerManager implements OnClickListener,
 		@Override
 		protected String doInBackground(String... params) {
 			String toSearch = params[0] + " - " + params[1];
-			List<SearchInfo> infos = SongSeacher.getLrcFromKuwo(toSearch);
+			IDownloadSource source = SourceFactory.getSource(mSp.getDataSource());
+			List<SearchInfo> infos = source.getLrcs(toSearch);
 			String path = null;
 			for(SearchInfo info: infos) {
 				if(info.name.contains(params[0]) && params[1].equals(info.singer)) {
-					String html = HTTPUtil.getInstance("player").getHtml(info.lrcURL);
-					LrcInfo lrcs = SongSeacher.perseFromHTML(html);
-					if(lrcs.getInfos() == null || lrcs.getInfos().isEmpty()) {
+					List<XRCLine> lines = source.getLrc(info.lrcURL);
+					if(lines == null || lines.isEmpty()) {
 						continue;
 					}
-					path = MusicApp.lrcPath + "/" + params[2] + ".lrc";
-					DownloadService.saveLrc(new File(path), lrcs);
+					path = MusicApp.lrcPath + "/" + params[2] + ".zlrc";
+					DownloadService.saveLrc(new File(path), lines);
 					break;
 				}
 			}

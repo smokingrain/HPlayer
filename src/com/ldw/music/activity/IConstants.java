@@ -25,6 +25,7 @@ public interface IConstants {
 	public static final String SP_AUTO_DOWNLOAD_LYRIC = "auto_download_lyric";
 	public static final String SP_FILTER_SIZE = "filter_size";
 	public static final String SP_FILTER_TIME = "filter_time";
+	public static final String SP_DATA_SOURCE = "data_source";
 	
 	public final static int REFRESH_PROGRESS_EVENT = 0x100;
 

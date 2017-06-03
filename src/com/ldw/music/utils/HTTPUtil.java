@@ -59,6 +59,18 @@ public class HTTPUtil {
 		httpClient = null;
 	}
 	
+	public String getHtml(String url, Map<String, String> params) {
+		if(null != params) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("?");
+			for(String key : params.keySet()) {
+				sb.append(key).append("=").append(params.get(key)).append("&");
+			}
+			url += sb.toString();
+		}
+		return getHtml(url);
+	}
+	
 	public String getHtml(String url){
 		StringBuffer result=new StringBuffer();
 		try {
