@@ -124,7 +124,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		mMusicDao = new MusicInfoDao(a);
 		mSp = new SPStorage(a);
 		mLyricDownloadManager = new LyricDownloadManager(a);
-		mLyricLoadHelper = new LyricLoadHelper();
+		mLyricLoadHelper = MusicApp.mLyricLoadHelper;
 		mLyricLoadHelper.setLyricListener(mLyricListener);
 
 		DisplayMetrics metric = new DisplayMetrics();
