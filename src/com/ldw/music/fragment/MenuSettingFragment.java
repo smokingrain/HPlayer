@@ -31,7 +31,7 @@ import com.ldw.music.view.WheelView;
 public class MenuSettingFragment extends Fragment implements OnClickListener, IConstants {
 	
 	private LinearLayout mAdviceLayout, mAboutLayout;
-	private CheckedTextView mChangeSongTv, mAutoLyricTv, mFilterSizeTv, mFilterTimeTv;
+	private CheckedTextView mChangeSongTv, mAutoLyricTv, mFilterSizeTv, mFilterTimeTv, mDesktopLrcTv;
 	private TextView mDataSource;
 	private SPStorage mSp;
 	
@@ -65,6 +65,7 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		mAutoLyricTv = (CheckedTextView) view.findViewById(R.id.auto_download_lyric);
 		mFilterSizeTv = (CheckedTextView) view.findViewById(R.id.filter_size);
 		mFilterTimeTv = (CheckedTextView) view.findViewById(R.id.filter_time);
+		mDesktopLrcTv = (CheckedTextView) view.findViewById(R.id.open_desktoplrc);
 		
 		mDataSource = (TextView) view.findViewById(R.id.data_source_selector);
 		
@@ -72,6 +73,7 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		mAutoLyricTv.setChecked(mSp.getAutoLyric());
 		mFilterSizeTv.setChecked(mSp.getFilterSize());
 		mFilterTimeTv.setChecked(mSp.getFilterTime());
+		mDesktopLrcTv.setChecked(mSp.getOpenDesktopLrc());
 		
 		mDataSource.setText(mSp.getDataSource());
 		
@@ -79,6 +81,7 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		mAutoLyricTv.setOnClickListener(this);
 		mFilterSizeTv.setOnClickListener(this);
 		mFilterTimeTv.setOnClickListener(this);
+		mDesktopLrcTv.setOnClickListener(this);
 		
 		mDataSource.setOnClickListener(this);
 	}
@@ -108,6 +111,10 @@ public class MenuSettingFragment extends Fragment implements OnClickListener, IC
 		case R.id.filter_time:
 			mFilterTimeTv.toggle();
 			mSp.saveFilterTime(mFilterTimeTv.isChecked());
+			break;
+		case R.id.open_desktoplrc:
+			mDesktopLrcTv.toggle();
+			mSp.saveDesktopLrc(mDesktopLrcTv.isChecked());
 			break;
 		case R.id.data_source_selector:
 			String data = mSp.getDataSource();

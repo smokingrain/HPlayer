@@ -531,7 +531,7 @@ public class SlidingDrawerManager implements OnClickListener,
 			String path = null;
 			for(SearchInfo info: infos) {
 				if(info.name.contains(params[0]) && params[1].equals(info.singer)) {
-					List<XRCLine> lines = source.getLrc(info.lrcURL);
+					List<XRCLine> lines = source.getLrc(info);
 					if(lines == null || lines.isEmpty()) {
 						continue;
 					}

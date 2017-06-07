@@ -50,7 +50,7 @@ public class HttpClientHelper {
  
                 HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
                 HttpProtocolParams.setContentCharset(params,
-                        HTTP.DEFAULT_CONTENT_CHARSET);
+                        HTTP.UTF_8);
                 HttpProtocolParams.setUseExpectContinue(params, true);
  
                 ConnManagerParams.setTimeout(params, 10000);

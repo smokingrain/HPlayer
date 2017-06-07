@@ -79,5 +79,14 @@ public class SPStorage implements IConstants {
 	public String getDataSource() {
 		return mSp.getString(SP_DATA_SOURCE, "kugou");
 	}
+	
+	public void saveDesktopLrc(boolean open) {
+		mEditor.putBoolean(SP_OPEN_DESKTOP_LRC, open);
+		mEditor.commit();
+	}
+	
+	public boolean getOpenDesktopLrc() {
+		return mSp.getBoolean(SP_OPEN_DESKTOP_LRC, false);
+	}
 
 }

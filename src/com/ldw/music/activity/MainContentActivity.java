@@ -40,6 +40,7 @@ import com.ldw.music.fragment.MainFragment;
 import com.ldw.music.fragment.MenuFragment;
 import com.ldw.music.lrc.XRCLine;
 import com.ldw.music.slidemenu.SlidingMenu;
+import com.ldw.music.storage.SPStorage;
 import com.ldw.music.utils.MusicUtils;
 import com.ldw.music.utils.SplashScreen;
 import com.ldw.music.view.DesktopLyricView;
@@ -65,6 +66,8 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	
 	private DesktopLyricView pv;
 	
+	private SPStorage mSp;
+	
 	public interface OnBackListener {
 		public abstract void onBack();
 	}
@@ -76,6 +79,8 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		getWindowManager().getDefaultDisplay().getMetrics(metric);
 		mScreenWidth = metric.widthPixels;
 		Log.i("com.xk.hplayer", "start app!");
+		
+		mSp = new SPStorage(this);
 		initSDCard();
 		
 		IntentFilter headSetFilter = new IntentFilter();
@@ -349,7 +354,9 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 	@Override
 	protected void onPause() {
 		Log.i(TAG, "MAIN PAUSE");
-		show();
+		if(mSp.getOpenDesktopLrc()) {
+			show();
+		}
 		super.onPause();
 	}
 

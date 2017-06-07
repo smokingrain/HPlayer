@@ -1,9 +1,12 @@
 package com.ldw.music;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.ldw.music.lrc.LyricLoadHelper;
 import com.ldw.music.service.ServiceManager;
+import com.ldw.music.utils.HTTPUtil;
 
 import android.app.Application;
 import android.os.Environment;
@@ -34,7 +37,7 @@ public class MusicApp extends Application {
 	public static Long cid;
 	
 	public static LyricLoadHelper mLyricLoadHelper = new LyricLoadHelper();
-	
+	public static Map<String,HTTPUtil> maps=new HashMap<String,HTTPUtil>();
 	@Override
 	public void onCreate() {
 		super.onCreate();
