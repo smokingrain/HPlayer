@@ -182,7 +182,7 @@
         android:minHeight="2.0dip"
         android:progressDrawable="@drawable/playback_seekbar2" />
 
-    <ListView
+    <com.ldw.music.lib.SwipeMenuListView
         android:id="@+id/music_listview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

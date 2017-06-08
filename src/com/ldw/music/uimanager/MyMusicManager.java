@@ -9,26 +9,31 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.ldw.music.MusicApp;
 import com.ldw.music.R;
 import com.ldw.music.activity.IConstants;
-import com.ldw.music.adapter.MyAdapter;
-import com.ldw.music.model.AlbumInfo;
-import com.ldw.music.model.ArtistInfo;
-import com.ldw.music.model.FolderInfo;
+import com.ldw.music.adapter.MusicAdapter;
+import com.ldw.music.lib.SwipeMenu;
+import com.ldw.music.lib.SwipeMenuCreator;
+import com.ldw.music.lib.SwipeMenuItem;
+import com.ldw.music.lib.SwipeMenuListView;
+import com.ldw.music.lib.SwipeMenuListView.OnMenuItemClickListener;
 import com.ldw.music.model.MusicInfo;
 import com.ldw.music.service.ServiceManager;
 import com.ldw.music.storage.SPStorage;
@@ -47,8 +52,8 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private Activity mActivity;
 
 	private String TAG = MyMusicManager.class.getSimpleName();
-	private MyAdapter mAdapter;
-	private ListView mListView;
+	private MusicAdapter mAdapter;
+	private SwipeMenuListView mListView;
 	private ServiceManager mServiceManager = null;
 	private SlidingDrawerManager mSdm;
 	private MyMusicUIManager mUIm;
@@ -90,7 +95,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 
 		mBottomLayout = (RelativeLayout) view.findViewById(R.id.bottomLayout);
 
-		mListView = (ListView) view.findViewById(R.id.music_listview);
+		mListView = (SwipeMenuListView) view.findViewById(R.id.music_listview);
 
 		mActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -151,9 +156,45 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 		}
 	}
 
+	private int dp2px(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+        		mActivity.getResources().getDisplayMetrics());
+    }
+	
 	private void initListView() {
-		mAdapter = new MyAdapter(mActivity, mServiceManager, mSdm);
+		mAdapter = new MusicAdapter(mActivity, mServiceManager, mSdm);
 		mListView.setAdapter(mAdapter);
+		
+		SwipeMenuCreator creator = new SwipeMenuCreator() {
+			
+			@Override
+			public void create(SwipeMenu menu) {
+				// create "delete" item
+                SwipeMenuItem deleteItem = new SwipeMenuItem(
+                		mActivity.getApplicationContext());
+                // set item background
+                deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9,
+                        0x3F, 0x25)));
+                // set item width
+                deleteItem.setWidth(dp2px(90));
+                // set a icon
+                deleteItem.setIcon(R.drawable.ic_delete);
+                // add to menu
+                menu.addMenuItem(deleteItem);
+				
+			}
+		};
+		
+		mListView.setMenuCreator(creator);
+		
+		mListView.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+			
+			@Override
+			public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
+				Toast.makeText(mActivity, "del clicked!", Toast.LENGTH_SHORT).show();
+				return false;
+			}
+		});
 
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 
