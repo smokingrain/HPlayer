@@ -31,18 +31,23 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 
+import android.util.Log;
+
+import com.ldw.music.MusicApp;
+
 
 public class HTTPUtil {
 	public HttpClient httpClient = HttpClientHelper.getHttpClient();
 	public static String cid=null;
-	private static Map<String,HTTPUtil> maps=new HashMap<String,HTTPUtil>();
+	
 	
 	public static HTTPUtil getInstance(String name){
-		HTTPUtil instance=maps.get(name);
+		HTTPUtil instance=MusicApp.maps.get(name);
 		if(null==instance){
 			instance=new HTTPUtil(name);
-			maps.put(name, instance);
+			MusicApp.maps.put(name, instance);
 		}
+		Log.i("httpclient", instance.hashCode() + "");
 		return instance;
 	}
 	
@@ -51,12 +56,25 @@ public class HTTPUtil {
 	}
 	
 	public static void remove(Object obj){
-		maps.remove(obj);
+		MusicApp.maps.remove(obj);
 	}
 	
 	public void close(){
 		httpClient.getConnectionManager().shutdown();
 		httpClient = null;
+	}
+	
+	
+	public String getHtml(String url, List<HttpRequestParam> params) {
+		if(null != params) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("?");
+			for(HttpRequestParam param : params) {
+				sb.append(param.key).append("=").append(param.value).append("&");
+			}
+			url += sb.toString();
+		}
+		return getHtml(url);
 	}
 	
 	public String getHtml(String url, Map<String, String> params) {

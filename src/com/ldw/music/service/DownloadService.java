@@ -99,10 +99,10 @@ public class DownloadService extends Service implements IConstants{
 								String url=info.url;
 								String lrcUrl = info.lrcURL;
 								IDownloadSource source = SourceFactory.getSource(mSp.getDataSource());
-								SongLocation loc=HTTPUtil.getInstance("player").getInputStream(source.getSongUrl(info));
+								SongLocation loc=HTTPUtil.getInstance("search").getInputStream(source.getSongUrl(info));
 								File temp = new File(parent,"temp_"+System.currentTimeMillis() + info.type);
 								
-								List<XRCLine> lines = source.getLrc(lrcUrl);
+								List<XRCLine> lines = source.getLrc(info);
 								try {
 									saveToFile(temp, file, loc.input);
 									saveLrc(lrcFile, lines);

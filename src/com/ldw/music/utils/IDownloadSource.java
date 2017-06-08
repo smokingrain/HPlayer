@@ -16,7 +16,7 @@ public interface IDownloadSource {
 	
 	public String getMVUrl(SearchInfo info);
 	
-	public List<XRCLine> getLrc(String url);
+	public List<XRCLine> getLrc(SearchInfo info);
 	
 	public List<SearchInfo> getMV(String name);
 	

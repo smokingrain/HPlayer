@@ -153,6 +153,7 @@ public class KuwoSource implements IDownloadSource {
 					Elements as=nameP.getElementsByTag("a");
 					for(Element a:as){
 						info.name=a.attr("title");
+						info.lrcURL=a.attr("href");
 						break;
 					}
 					break;
@@ -229,8 +230,8 @@ public class KuwoSource implements IDownloadSource {
 	}
 
 	@Override
-	public List<XRCLine> getLrc(String url) {
-		String html = HTTPUtil.getInstance("player").getHtml(url);
+	public List<XRCLine> getLrc(SearchInfo info) {
+		String html = HTTPUtil.getInstance("search").getHtml(info.lrcURL);
 		Document doc = Jsoup.parse(html);
 		Elements lrcs = doc.select("p[class=lrcItem]");
 		LrcInfo lrc = new LrcInfo();
@@ -253,7 +254,7 @@ public class KuwoSource implements IDownloadSource {
 			return info.url;
 		}
 		info.urlFound = true;
-		info.url = HTTPUtil.getInstance("player").getHtml(info.url);
+		info.url = HTTPUtil.getInstance("search").getHtml(info.url);
 		return info.url;
 	}
 

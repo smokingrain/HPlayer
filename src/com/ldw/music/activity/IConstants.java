@@ -26,6 +26,7 @@ public interface IConstants {
 	public static final String SP_FILTER_SIZE = "filter_size";
 	public static final String SP_FILTER_TIME = "filter_time";
 	public static final String SP_DATA_SOURCE = "data_source";
+	public static final String SP_OPEN_DESKTOP_LRC = "open_desktop_lrc";
 	
 	public final static int REFRESH_PROGRESS_EVENT = 0x100;
 

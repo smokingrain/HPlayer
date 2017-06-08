@@ -97,6 +97,24 @@
                 android:text="自动下载歌词"
                 android:textColor="#ff404040"
                 android:textSize="16.0sp" />
+            
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1.0dip"
+                android:background="#cccccc" />
+
+            <CheckedTextView
+                android:id="@+id/open_desktoplrc"
+                android:layout_width="fill_parent"
+                android:layout_height="48.0dip"
+                android:background="@drawable/menu_setting_selector_bottom"
+                android:checkMark="@drawable/toggle_button_selector"
+                android:checked="false"
+                android:gravity="center_vertical"
+                android:padding="10.0dip"
+                android:text="开启桌面歌词"
+                android:textColor="#ff404040"
+                android:textSize="16.0sp" />
         </LinearLayout>
         
         <TextView

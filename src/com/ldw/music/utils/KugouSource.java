@@ -1,6 +1,9 @@
 package com.ldw.music.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -15,6 +18,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.ldw.music.lrc.LrcInfo;
+import com.ldw.music.lrc.LrcParser;
 import com.ldw.music.lrc.XRCLine;
 import com.ldw.music.utils.SongSeacher.SearchInfo;
 
@@ -170,9 +175,8 @@ public class KugouSource implements IDownloadSource {
 	}
 
 	@Override
-	public List<XRCLine> getLrc(String url) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<XRCLine> getLrc(SearchInfo info) {
+		return JSONUtil.toBean(info.lrcURL, JSONUtil.getCollectionType(List.class, XRCLine.class));
 	}
 
 	@Override
@@ -182,7 +186,7 @@ public class KugouSource implements IDownloadSource {
 		}
 		String md5 = ByteUtil.MD5(info.url + "kugoumvcloud");
 		String url = "http://trackermv.kugou.com/interface/index/cmd=100&hash=" + info.url + "&key=" + md5 + "&pid=6&ext=mp4&ismp3=0";
-		String rst = HTTPUtil.getInstance("test").getHtml(url);
+		String rst = HTTPUtil.getInstance("search").getHtml(url);
 		Map<String, Object> map = JSONUtil.fromJson(rst);
 		info.urlFound = true;
 		info.url = (String)((Map<String , Map<String, Object>>)map.get("mvdata")).get("sd").get("downurl");
@@ -195,15 +199,36 @@ public class KugouSource implements IDownloadSource {
 			return info.url;
 		}
 		String url = "http://www.kugou.com/yy/index.php";
-		Map<String, String> params = new HashMap<>();
-		params.put("r", "play/getdata");
-		params.put("hash", info.url);
-		params.put("album_id", info.extra);
-		params.put("_", String.valueOf(System.currentTimeMillis()));
-		String rst = HTTPUtil.getInstance("test").getHtml(url, params);
+		List<HttpRequestParam> params = new ArrayList<HttpRequestParam>();
+		params.add(HttpRequestParam.put("r", "play/getdata"));
+		params.add(HttpRequestParam.put("hash", info.url));
+		params.add(HttpRequestParam.put("album_id", info.extra));
+		params.add(HttpRequestParam.put("_", String.valueOf(System.currentTimeMillis())));
+		String rst = HTTPUtil.getInstance("search").getHtml(url, params);
 		Map<String, Object> map = JSONUtil.fromJson(rst);
 		info.urlFound = true;
 		info.url = (String) ((Map<String, Object>)map.get("data")).get("play_url");
+		String lrcText = (String) ((Map<String, Object>)map.get("data")).get("lyrics");
+		int length = (int) ((Map<String, Object>)map.get("data")).get("timelength");
+		LrcParser parser = new LrcParser((long) length);
+		ByteArrayInputStream bin = new ByteArrayInputStream(lrcText.getBytes());
+		LrcInfo linfo;
+		try {
+			linfo = parser.parser(bin);
+			List<XRCLine> lines = parser.parseXRC(linfo);
+			info.lrcURL = JSONUtil.toJson(lines);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				bin.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		return info.url;
 	}
 

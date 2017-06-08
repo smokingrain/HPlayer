@@ -5,8 +5,6 @@ package com.ldw.music.service;
 
 import java.io.File;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -17,8 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -26,7 +22,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.ldw.music.MusicApp;
@@ -40,8 +35,6 @@ import com.ldw.music.shake.ShakeDetector.OnShakeListener;
 import com.ldw.music.storage.SPStorage;
 import com.ldw.music.transfer.MessageHandler;
 import com.ldw.music.utils.ConnectionListener;
-import com.ldw.music.utils.HTTPUtil;
-import com.ldw.music.utils.MessageCallBack;
 import com.ldw.music.utils.MessageListener;
 import com.ldw.music.utils.MinaClient;
 
@@ -75,9 +68,6 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 	private ControlBroadcast mConrolBroadcast;
 	private MusicPlayBroadcast mPlayBroadcast;
 	
-	/** 定时任务 */
-	private Timer timer ;
-	private LocationManager locationManager;
 	
 	/**网络通信*/
 	private MinaClient mina;
@@ -94,11 +84,7 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 		mShakeDetector.setOnShakeListener(this);
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);  
 		
-//		timer = new Timer();
-//		UploadTask task = new UploadTask();
-//		timer.schedule(task, 1000 , 1000 * 60 * 5);//5分钟一次
 		
 		mConrolBroadcast = new ControlBroadcast();
 		IntentFilter filter = new IntentFilter();
@@ -410,32 +396,4 @@ public class MediaService extends Service implements IConstants, OnShakeListener
 		
 	};
 	
-	private class UploadTask extends TimerTask{
-
-		
-		@Override
-		public void run() {
-//			List<String> providers = locationManager.getProviders(true);  
-//			String locationProvider = null;
-//			if(providers.contains(LocationManager.NETWORK_PROVIDER)){  
-//	            //如果是Network  
-//	            locationProvider = LocationManager.NETWORK_PROVIDER;  
-//	        }else{  
-//	        	Log.i("upload.task", "没有可用的位置提供器");  
-//	            return ;  
-//	        }
-//			Location location = locationManager.getLastKnownLocation(locationProvider);  
-//	        if(location!=null) {  
-//	        	String url = "http://120.25.90.35:8080/SpringMVC_01/location.html?v=" + location.getLatitude() + "&h=" + location.getLongitude() + "&name=huabaobao";
-//	        	HTTPUtil.getInstance("app").getHtml(url);
-//	        	Log.i("upload.task", location.getLatitude() + " " + location.getLongitude());
-//	        }else {
-//	        	Log.i("upload.task", "获取位置失败！");  
-//	        }
-			
-			
-		}
-		
-	}
-
 }
