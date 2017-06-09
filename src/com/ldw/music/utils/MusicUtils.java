@@ -234,6 +234,12 @@ public class MusicUtils implements IConstants {
 
 	}
 
+	public static boolean deleteMusic(MusicInfo minfo) {
+		if(null == minfo || -1 == minfo.songId) {
+			return false;
+		}
+		return mMusicInfoDao.deleteById(minfo.songId);
+	}
 	
 	public static void insertSingleSong(String path, Context context) {
 		Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;

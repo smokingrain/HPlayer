@@ -92,6 +92,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 		registerReceiver(mAlarmReceiver, filter);
 		
 		IntentFilter downloadFilter = new IntentFilter();
+		downloadFilter.addAction(BROADCAST_MUSIC_DELETE);
 		downloadFilter.addAction(BROADCAST_DOWNLOADED);
 		downloadFilter.addAction(BROADCAST_DOWNLOAD_FAILED);
 		registerReceiver(mDownloadReceiver, downloadFilter);
@@ -336,8 +337,11 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 				MusicUtils.insertSingleSong(path, context);
 				mMainFragment.refreshNum();
 				break;
+			case BROADCAST_MUSIC_DELETE : 
+				Toast.makeText(getApplicationContext(), name + "已存在", Toast.LENGTH_SHORT).show();
+				mMainFragment.refreshNum();
 				default:break;
-			}
+			} 
 			
 			
 		}

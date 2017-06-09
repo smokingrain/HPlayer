@@ -1,7 +1,6 @@
 package com.ldw.music.lib;
 
 import android.content.Context;
-import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -217,7 +216,7 @@ public class SwipeMenuListView extends ListView {
                     getSelector().setState(new int[]{0});
                     ev.setAction(MotionEvent.ACTION_CANCEL);
                     System.out.println("ACTION_CANCEL");
-//                    super.onTouchEvent(ev);
+                    super.onTouchEvent(ev);
                     return true;
                 } else if (mTouchState == TOUCH_STATE_NONE) {
                     if (Math.abs(dy) > MAX_Y) {
@@ -257,7 +256,7 @@ public class SwipeMenuListView extends ListView {
                 }
                 break;
         }
-        return true;
+        return super.onTouchEvent(ev);
     }
 
     public void smoothOpenMenu(int position) {

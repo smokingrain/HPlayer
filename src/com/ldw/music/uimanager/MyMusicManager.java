@@ -1,8 +1,10 @@
 package com.ldw.music.uimanager;
 
+import java.io.File;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,15 +15,26 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -37,6 +50,7 @@ import com.ldw.music.lib.SwipeMenuListView.OnMenuItemClickListener;
 import com.ldw.music.model.MusicInfo;
 import com.ldw.music.service.ServiceManager;
 import com.ldw.music.storage.SPStorage;
+import com.ldw.music.utils.MediaScanner;
 import com.ldw.music.utils.MusicTimer;
 import com.ldw.music.utils.MusicUtils;
 
@@ -67,9 +81,14 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private Bitmap defaultArtwork;
 
 	private UIManager mUIManager;
+	
+	private int mScreenWidth;
 
 	public MyMusicManager(Activity activity, UIManager manager) {
 		this.mActivity = activity;
+		DisplayMetrics metric = new DisplayMetrics();
+		activity.getWindowManager().getDefaultDisplay().getMetrics(metric);
+		mScreenWidth = metric.widthPixels;
 		mInflater = LayoutInflater.from(activity);
 		this.mUIManager = manager;
 	}
@@ -164,38 +183,18 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private void initListView() {
 		mAdapter = new MusicAdapter(mActivity, mServiceManager, mSdm);
 		mListView.setAdapter(mAdapter);
-		
-		SwipeMenuCreator creator = new SwipeMenuCreator() {
-			
+
+		mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
 			@Override
-			public void create(SwipeMenu menu) {
-				// create "delete" item
-                SwipeMenuItem deleteItem = new SwipeMenuItem(
-                		mActivity.getApplicationContext());
-                // set item background
-                deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9,
-                        0x3F, 0x25)));
-                // set item width
-                deleteItem.setWidth(dp2px(90));
-                // set a icon
-                deleteItem.setIcon(R.drawable.ic_delete);
-                // add to menu
-                menu.addMenuItem(deleteItem);
-				
-			}
-		};
-		
-		mListView.setMenuCreator(creator);
-		
-		mListView.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-			
-			@Override
-			public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
-				Toast.makeText(mActivity, "del clicked!", Toast.LENGTH_SHORT).show();
-				return false;
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				MusicInfo info = mAdapter.getData().get(position);
+				showDeleteDialog(info);
+				return true;
 			}
 		});
-
+		
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -210,6 +209,67 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 		mAdapter.setData(MusicUtils.queryMusic(mActivity, from));
 	}
 
+	private void showDeleteDialog(final MusicInfo minfo) {
+		
+		View view = View.inflate(this.mActivity, R.layout.delete_music_comfirm, null);
+		final Dialog dialog = new Dialog(this.mActivity, R.style.lrc_dialog);
+		dialog.setContentView(view);
+		dialog.setCanceledOnTouchOutside(false);
+
+		Window dialogWindow = dialog.getWindow();
+		WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+		dialogWindow.setGravity(Gravity.CENTER);
+		// lp.x = 100; // 新位置X坐标
+		// lp.y = 100; // 新位置Y坐标
+		lp.width = (int) (mScreenWidth * 0.7); // 宽度
+		// lp.height = 400; // 高度
+
+		// 当Window的Attributes改变时系统会调用此函数,可以直接调用以应用上面对窗口参数的更改,也可以用setAttributes
+		// dialog.onWindowAttributesChanged(lp);
+		dialogWindow.setAttributes(lp);
+
+		dialog.show();
+
+		final Button cancleBtn = (Button) view.findViewById(R.id.cancle_btn);
+		final Button okBtn = (Button) view.findViewById(R.id.ok_btn);
+		final CheckBox chk = (CheckBox) view.findViewById(R.id.del_check);
+		chk.setChecked(false);
+		OnClickListener listener = new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (v == cancleBtn) {
+					dialog.dismiss();
+				} else if (v == okBtn) {
+					MusicInfo cur = mServiceManager.getCurMusic();
+					if(null != cur && cur.songId == minfo.songId) {
+						if(mServiceManager.getPlayState() >= MPS_PREPARE) {
+							mServiceManager.pause();
+						}
+					}
+					
+					MusicUtils.deleteMusic(minfo);
+					String path = minfo.data;
+					File file = new File(path);
+					String name = file.getName();
+					if(chk.isChecked()) {
+						file.delete();
+						MediaScanner scanner = MediaScanner.getInstanc(mActivity);
+						scanner.scanFile(path, null);
+					}
+					Intent downloadIntent = new Intent(BROADCAST_MUSIC_DELETE);
+					downloadIntent.putExtra("name", name);
+					downloadIntent.putExtra("path", file.getAbsolutePath());
+					mActivity.sendBroadcast(downloadIntent);
+					dialog.dismiss();
+				}
+			}
+		};
+		cancleBtn.setOnClickListener(listener);
+		okBtn.setOnClickListener(listener);
+		
+	}
+	
 	private class MusicPlayBroadcast extends BroadcastReceiver {
 
 		@Override
