@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ldw.music.activity.IConstants;
 import com.ldw.music.model.MusicInfo;
@@ -216,6 +217,7 @@ public class MusicControl implements IConstants, OnCompletionListener {
 			mPlayState = MPS_PREPARE;
 		} catch (Exception e) {
 			Log.e(TAG, "", e);
+			Toast.makeText(mContext, "播放失败", Toast.LENGTH_SHORT).show();
 			mPlayState = MPS_INVALID;
 			if(pos < mMusicList.size()) {
 				pos++;

@@ -45,6 +45,12 @@ public class MusicInfoDao implements IConstants {
 		return parseCursor(db.rawQuery(sql, null));
 	}
 	
+	public boolean deleteById(Integer mid) {
+		SQLiteDatabase db = DatabaseHelper.getInstance(mContext);
+		int result = db.delete(TABLE_MUSIC, "songid = ?", new String[]{"" + mid});
+		return result > 0;
+	}
+	
 	private List<MusicInfo> parseCursor(Cursor cursor) {
 		List<MusicInfo> list = new ArrayList<MusicInfo>();
 		while(cursor.moveToNext()) {

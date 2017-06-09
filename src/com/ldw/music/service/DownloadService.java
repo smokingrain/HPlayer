@@ -96,8 +96,6 @@ public class DownloadService extends Service implements IConstants{
 							File file=new File(parent,info.singer+" - "+info.name +"."+ info.type);
 							File lrcFile=new File(lrcParent,info.singer+" - "+info.name + ".zlrc");
 							if(!file.exists()){
-								String url=info.url;
-								String lrcUrl = info.lrcURL;
 								IDownloadSource source = SourceFactory.getSource(mSp.getDataSource());
 								SongLocation loc=HTTPUtil.getInstance("search").getInputStream(source.getSongUrl(info));
 								File temp = new File(parent,"temp_"+System.currentTimeMillis() + info.type);
