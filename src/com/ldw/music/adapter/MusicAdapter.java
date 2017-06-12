@@ -52,6 +52,12 @@ public class MusicAdapter extends BaseSwipListAdapter implements IConstants {
 		mMusicDao = new MusicInfoDao(context);
 	}
 	
+	@Override
+	public boolean getSwipEnableByPosition(int position) {
+		return false;
+	}
+	
+	
 	public void setData(List<MusicInfo> list, int from) {
 		setData(list);
 		this.mFrom = from;

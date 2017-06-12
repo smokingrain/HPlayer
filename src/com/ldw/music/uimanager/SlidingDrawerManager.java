@@ -43,6 +43,7 @@ import com.ldw.music.activity.IConstants;
 import com.ldw.music.activity.PlayQueueActivity;
 import com.ldw.music.adapter.LyricAdapter;
 import com.ldw.music.adapter.MusicAdapter;
+import com.ldw.music.adapter.MyAdapter;
 import com.ldw.music.db.FavoriteInfoDao;
 import com.ldw.music.db.MusicInfoDao;
 import com.ldw.music.lrc.LrcInfo;
@@ -103,7 +104,7 @@ public class SlidingDrawerManager implements OnClickListener,
 	private MusicInfoDao mMusicDao;
 	private MusicInfo mCurrentMusicInfo;
 	private boolean mListNeedRefresh = false;
-	private MusicAdapter mAdapter;
+	private MyAdapter mAdapter;
 	private MusicTimer mMusicTimer;
 	private int mProgress;
 	private LyricDownloadManager mLyricDownloadManager;
@@ -624,7 +625,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		view.setVisibility(View.GONE);
 	}
 
-	public void setListViewAdapter(MusicAdapter adapter) {
+	public void setListViewAdapter(MyAdapter adapter) {
 		mAdapter = adapter;
 	}
 

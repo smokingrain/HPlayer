@@ -67,8 +67,8 @@ public class MyAdapter extends BaseAdapter implements IConstants {
 			mMusicList.addAll(list);
 			// 为list排序
 			Collections.sort(mMusicList, comparator);
-			notifyDataSetChanged();
 		}
+		notifyDataSetChanged();
 	}
 	
 	public void refreshPlayingList() {
