@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ldw.music"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="4"
+    android:versionName="1.3" >
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="19" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>  
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />  
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />  
+	<uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />  
+	
         
     <application
         android:name=".MusicApp"
@@ -65,6 +68,7 @@
                 <action android:name="com.ldw.music.service.MediaService" />
             </intent-filter>
         </service>
+        <service android:name=".service.DownloadService" android:enabled="true"></service>
     </application>
 
 </manifest>
