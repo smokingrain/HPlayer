@@ -40,9 +40,9 @@ public class FavoriteInfoDao implements IConstants {
 		db.insert(TABLE_FAVORITE, null, cv);
 	}
 	
-	public void deleteById(int songId) {
+	public boolean deleteById(int songId) {
 		SQLiteDatabase db = DatabaseHelper.getInstance(mContext);
-		db.delete(TABLE_FAVORITE, "songId=?", new String[]{ songId+"" });
+		return db.delete(TABLE_FAVORITE, "songId=?", new String[]{ songId+"" }) > 0;
 	}
 
 	public List<MusicInfo> getMusicInfo() {

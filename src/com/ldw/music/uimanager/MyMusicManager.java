@@ -35,6 +35,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -42,6 +43,7 @@ import com.ldw.music.MusicApp;
 import com.ldw.music.R;
 import com.ldw.music.activity.IConstants;
 import com.ldw.music.adapter.MusicAdapter;
+import com.ldw.music.adapter.MyAdapter;
 import com.ldw.music.lib.SwipeMenu;
 import com.ldw.music.lib.SwipeMenuCreator;
 import com.ldw.music.lib.SwipeMenuItem;
@@ -66,8 +68,8 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 	private Activity mActivity;
 
 	private String TAG = MyMusicManager.class.getSimpleName();
-	private MusicAdapter mAdapter;
-	private SwipeMenuListView mListView;
+	private MyAdapter mAdapter;
+	private ListView mListView;
 	private ServiceManager mServiceManager = null;
 	private SlidingDrawerManager mSdm;
 	private MyMusicUIManager mUIm;
@@ -181,7 +183,7 @@ public class MyMusicManager extends MainUIManager implements IConstants,
     }
 	
 	private void initListView() {
-		mAdapter = new MusicAdapter(mActivity, mServiceManager, mSdm);
+		mAdapter = new MyAdapter(mActivity, mServiceManager, mSdm);
 		mListView.setAdapter(mAdapter);
 
 		mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -247,12 +249,12 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 							mServiceManager.pause();
 						}
 					}
-					
-					MusicUtils.deleteMusic(minfo);
+					MusicUtils.deleteMusic(minfo, from);
 					String path = minfo.data;
 					File file = new File(path);
 					String name = file.getName();
 					if(chk.isChecked()) {
+						MusicUtils.deleteMusic(minfo, START_FROM_LOCAL);
 						file.delete();
 						MediaScanner scanner = MediaScanner.getInstanc(mActivity);
 						scanner.scanFile(path, null);

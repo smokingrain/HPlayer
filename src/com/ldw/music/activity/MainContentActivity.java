@@ -338,7 +338,7 @@ public class MainContentActivity extends FragmentActivity implements IConstants 
 				mMainFragment.refreshNum();
 				break;
 			case BROADCAST_MUSIC_DELETE : 
-				Toast.makeText(getApplicationContext(), name + "已存在", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), name + "已删除", Toast.LENGTH_SHORT).show();
 				mMainFragment.refreshNum();
 				default:break;
 			} 

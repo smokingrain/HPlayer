@@ -54,6 +54,7 @@ public class UIManager implements IConstants, OnBackListener {
 	private RelativeLayout mMainLayout;
 	private ChangeBgReceiver mReceiver;
 	private MainUIManager mMainUIManager;
+	private MainUIManager[] managers = new MainUIManager[10];
 //	private SPStorage mSp;
 //	private String mDefaultBgPath;
 
@@ -152,7 +153,10 @@ public class UIManager implements IConstants, OnBackListener {
 		mMainActivity.registerBackListener(this);
 		switch (type) {
 		case START_FROM_LOCAL:
-			mMainUIManager = new MyMusicManager(mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new MyMusicManager(mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transView1 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View contentView1 = mMainUIManager.getView(START_FROM_LOCAL);
@@ -166,7 +170,10 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPager.setCurrentItem(1, true);
 			break;
 		case START_FROM_FAVORITE:
-			mMainUIManager = new MyMusicManager(mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new MyMusicManager(mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transView2 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View contentView2 = mMainUIManager.getView(START_FROM_FAVORITE);
@@ -180,8 +187,11 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPager.setCurrentItem(1, true);
 			break;
 		case START_FROM_FOLDER:
-			mMainUIManager = new FolderBrowserManager(
-					mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new FolderBrowserManager(
+						mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transView3 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View folderView = mMainUIManager.getView();
@@ -195,8 +205,11 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPager.setCurrentItem(1, true);
 			break;
 		case START_FROM_ARTIST:
-			mMainUIManager = new ArtistBrowserManager(
-					mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new ArtistBrowserManager(
+						mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transView4 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View artistView = mMainUIManager.getView();
@@ -210,8 +223,11 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPager.setCurrentItem(1, true);
 			break;
 		case START_FROM_ALBUM:
-			mMainUIManager = new AlbumBrowserManager(
-					mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new AlbumBrowserManager(
+						mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transView5 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View albumView = mMainUIManager.getView();
@@ -225,7 +241,10 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPager.setCurrentItem(1, true);
 			break;
 		case FOLDER_TO_MYMUSIC:
-			mMainUIManager = new MyMusicManager(mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new MyMusicManager(mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transViewSub1 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View contentViewSub1 = mMainUIManager.getView(START_FROM_FOLDER, obj);
@@ -239,7 +258,10 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPagerSub.setCurrentItem(1, true);
 			break;
 		case ARTIST_TO_MYMUSIC:
-			mMainUIManager = new MyMusicManager(mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new MyMusicManager(mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transViewSub2 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View contentViewSub2 = mMainUIManager.getView(START_FROM_ARTIST, obj);
@@ -253,7 +275,10 @@ public class UIManager implements IConstants, OnBackListener {
 			mViewPagerSub.setCurrentItem(1, true);
 			break;
 		case ALBUM_TO_MYMUSIC:
-			mMainUIManager = new MyMusicManager(mActivity, this);
+			if(null == managers[type]) {
+				managers[type] = new MyMusicManager(mActivity, this);
+			}
+			mMainUIManager = managers[type];
 			View transViewSub3 = mInflater.inflate(
 					R.layout.viewpager_trans_layout, null);
 			View contentViewSub3 = mMainUIManager.getView(START_FROM_ALBUM, obj);

@@ -234,11 +234,16 @@ public class MusicUtils implements IConstants {
 
 	}
 
-	public static boolean deleteMusic(MusicInfo minfo) {
+	public static boolean deleteMusic(MusicInfo minfo, Integer from) {
 		if(null == minfo || -1 == minfo.songId) {
 			return false;
+		}		if(from == START_FROM_LOCAL) {
+			return mMusicInfoDao.deleteById(minfo.songId);
+		} else if(from == START_FROM_FAVORITE) {
+			mMusicInfoDao.setFavoriteStateById(minfo.songId, 0);
+			return mFavoriteDao.deleteById(minfo.songId);
 		}
-		return mMusicInfoDao.deleteById(minfo.songId);
+		return false;
 	}
 	
 	public static void insertSingleSong(String path, Context context) {
