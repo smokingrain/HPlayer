@@ -54,8 +54,8 @@ public class LyricLoadHelper {
 	/** 句子集合 */
 	private List<XRCLine> mLyricSentences = new ArrayList<XRCLine>();
 
-	private LyricListener mLyricListener = null;
-
+	private List<LyricListener> mLyricListeners = new ArrayList<LyricListener>();
+	
 	private boolean mHasLyric = false;
 
 	/** 当前正在播放的歌词句子的在句子集合中的索引号 */
@@ -74,7 +74,10 @@ public class LyricLoadHelper {
 	}
 
 	public void setLyricListener(LyricListener listener) {
-		this.mLyricListener = listener;
+		if(null != listener) {
+			mLyricListeners.add(listener);
+			Log.i(TAG, "listeners size = " + mLyricListeners.size());
+		}
 	}
 
 	public void setIndexOfCurrentSentence(int index) {
@@ -139,9 +142,11 @@ public class LyricLoadHelper {
 			}
 		}
 		// 如果有谁在监听，通知它歌词载入完啦，并把载入的句子集合也传递过去
-		if (mLyricListener != null) {
-			mLyricListener.onLyricLoaded(mLyricSentences,
-					mIndexOfCurrentSentence);
+		if (!mLyricListeners.isEmpty()) {
+			for(LyricListener mLyricListener : mLyricListeners) {
+				mLyricListener.onLyricLoaded(mLyricSentences,
+						mIndexOfCurrentSentence);
+			}
 		}
 		if (mHasLyric) {
 			Log.i(TAG, "Lyric file existed.Lyric has " + mLyricSentences.size()
@@ -163,9 +168,11 @@ public class LyricLoadHelper {
 		if (mHasLyric && mLyricSentences != null && mLyricSentences.size() != 0) {
 			int newLyricIndex = seekSentenceIndex(millisecond);
 			if (newLyricIndex != -1 && newLyricIndex != mIndexOfCurrentSentence) {// 如果找到的歌词和现在的不是一句。
-				if (mLyricListener != null) {
-					// 告诉一声，歌词已经变成另外一句啦！
-					mLyricListener.onLyricSentenceChanged(newLyricIndex);
+				if (!mLyricListeners.isEmpty()) {
+					for(LyricListener mLyricListener : mLyricListeners) {
+						// 告诉一声，歌词已经变成另外一句啦！
+						mLyricListener.onLyricSentenceChanged(newLyricIndex);
+					}
 				}
 				mIndexOfCurrentSentence = newLyricIndex;
 			}

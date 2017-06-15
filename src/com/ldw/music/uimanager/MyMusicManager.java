@@ -11,15 +11,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -37,18 +31,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.ldw.music.MusicApp;
 import com.ldw.music.R;
 import com.ldw.music.activity.IConstants;
-import com.ldw.music.adapter.MusicAdapter;
 import com.ldw.music.adapter.MyAdapter;
-import com.ldw.music.lib.SwipeMenu;
-import com.ldw.music.lib.SwipeMenuCreator;
-import com.ldw.music.lib.SwipeMenuItem;
 import com.ldw.music.lib.SwipeMenuListView;
-import com.ldw.music.lib.SwipeMenuListView.OnMenuItemClickListener;
 import com.ldw.music.model.MusicInfo;
 import com.ldw.music.service.ServiceManager;
 import com.ldw.music.storage.SPStorage;
@@ -128,7 +116,12 @@ public class MyMusicManager extends MainUIManager implements IConstants,
 
 		mUIm = new MyMusicUIManager(mActivity, mServiceManager, view,
 				mUIManager);
-		mSdm = new SlidingDrawerManager(mActivity, mServiceManager, view);
+		if(null == mSdm) {
+			mSdm = new SlidingDrawerManager(mActivity, mServiceManager, view);
+		} else {
+			mSdm.setView(view);
+			mSdm.initView();
+		}
 		mMusicTimer = new MusicTimer(mSdm.mHandler, mUIm.mHandler);
 		mSdm.setMusicTimer(mMusicTimer);
 

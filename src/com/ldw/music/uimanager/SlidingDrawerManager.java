@@ -146,6 +146,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		view_in = AnimationUtils.loadAnimation(a, R.anim.fade_in);
 		view_out = AnimationUtils.loadAnimation(a, R.anim.fade_out);
 
+		Toast.makeText(a, "create sdm " + hashCode(), Toast.LENGTH_SHORT).show();
 		initView();
 
 		mHandler = new Handler() {
@@ -158,7 +159,7 @@ public class SlidingDrawerManager implements OnClickListener,
 		};
 	}
 
-	private void initView() {
+	public void initView() {
 		mListView = (ListView) findViewById(R.id.music_listview);
 		mGridView = (GridView) findViewById(R.id.gridview);
 		mSliding = (MySlidingDrawer) findViewById(R.id.slidingDrawer);
@@ -208,6 +209,10 @@ public class SlidingDrawerManager implements OnClickListener,
 		// mLrcView = (LrcView) findViewById(R.id.lrctextview);
 	}
 
+	public void setView (View view) {
+		this.mView = view;
+	}
+	
 	public void refreshSeekProgress(int curTime, int totalTime) {
 
 		int tempCurTime = curTime;
@@ -391,6 +396,9 @@ public class SlidingDrawerManager implements OnClickListener,
 	}
 
 	public void open() {
+		if(null != mCurrentMusicInfo) {
+			loadLyric(mCurrentMusicInfo);
+		}
 		mSliding.setVisibility(View.VISIBLE);
 		mSliding.animateOpen();
 	}
